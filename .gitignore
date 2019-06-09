@@ -1,0 +1,11 @@
+.history/
+.vscode/
+__pycache__/
+old versions/
+github.txt
+RPN_calculator - Tk.py
+scratch.py
+constants.json
+config.json
+*.pyc
+*.orig
