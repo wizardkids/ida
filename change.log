@@ -3,3 +3,17 @@
     -- new files:
         -- scratch.py
         -- RSS_reader.py
+
+2019-06-10
+    -- set up remote repository with three branches
+    -- modify .gitignore appropriately
+    -- establish initial functions, subject to massive change
+        -- about()
+        -- fold()
+        -- get_latest_feed()
+        -- get_revision_number()
+        -- get_rss_status()
+        -- import_OPML()
+        -- print_all_functions()
+        -- show_HTML_string()
+        -- show_lastest_rss()

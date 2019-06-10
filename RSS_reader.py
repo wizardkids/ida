@@ -5,6 +5,7 @@ Richard E. Rawson
 2019-06-09
 
 Program Description:
+    A small, lightweight, RSS feed reader. 
 
 Features:
 -- Add, edit, delete URLs
@@ -35,9 +36,50 @@ from pprint import pprint
 import feedparser
 import requests
 import urlwatch
+from sys import modules
 import webbrowser
 import os
 import textwrap
+from inspect import getmembers, isfunction
+
+
+def print_all_functions():
+    """
+    All commands and math operations. 
+
+    This function is not used, except by the developer.
+    """
+
+    # strategy: only get docstrings from things NOT in this list; this will be all the fxns that the user can use
+    module_functions = []
+
+    func_name = ''
+    func_list = []
+    print('='*14, ' ALL FUNCTIONS ', '='*14, sep='')
+    line_width = 45
+
+    for i in getmembers(modules[__name__],
+                        predicate=lambda f: isfunction(f) and f.__module__ == __name__):
+        print(i[0])
+        # func = i[0]
+        # fnd = False
+        # if func in module_functions:
+        #     continue
+        # for k, v in op2.items():
+        #     if v[0].__name__ == func:
+        #         fnd = True
+        #         func_name = k
+        #         docString = v[1]
+        #         break
+        # if not fnd:
+        #     continue
+
+        # print('{:>8}'.format(func_name), ' | ', sep='', end='')
+        # wrapper = textwrap.TextWrapper(width=line_width)
+        # explanation = wrapper.wrap(text=docString)
+        # for element in explanation:
+        #     print(element)
+    return
 
 
 def get_rss_status(url):
@@ -207,8 +249,9 @@ if __name__ == '__main__':
     version_num = '0.1 rev0'
     print('ida ' + version_num[0:3] + ' - a small news feed reader')
 
+    print_all_functions()
     # about this project
-    about()
+    # about()
 
     # import OPML file and store RSS addresses in myFeeds.txt
     # import_OPML()
