@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<opml version="1.0">
+    <head>
+        <title>Rick subscriptions in feedly Cloud</title>
+    </head>
+    <body>
+        <outline text="Emergent blogs" title="Emergent blogs">
+            <outline type="rss" text="Ignatian Spirituality" title="Ignatian Spirituality" xmlUrl="http://feeds.feedburner.com/dotMagis?format=xml" htmlUrl="https://www.ignatianspirituality.com"/>
+            <outline type="rss" text="bush baby colvin" title="bush baby colvin" xmlUrl="http://bushbabycolvin.blogspot.com/feeds/posts/default" htmlUrl="http://bushbabycolvin.blogspot.com/"/>
+            <outline type="rss" text="With new eyes" title="With new eyes" xmlUrl="http://wrostoll.blogspot.com/feeds/posts/default" htmlUrl="http://wrostoll.blogspot.com/"/>
+            <outline type="rss" text="Voice in the Wilderness" title="Voice in the Wilderness" xmlUrl="http://ravenwilderness.blogspot.com/feeds/posts/default?alt=rss" htmlUrl="http://ravenwilderness.blogspot.com/"/>
+            <outline type="rss" text="God In All Things" title="God In All Things" xmlUrl="http://godinallthings.com/feed/" htmlUrl="https://godinallthings.com"/>
+            <outline type="rss" text="Culture of Imagination" title="Culture of Imagination" xmlUrl="http://markvotava.com/feed/" htmlUrl="https://markvotava.com"/>
+            <outline type="rss" text="Richer By Far" title="Richer By Far" xmlUrl="http://richerbyfar.com/feed/" htmlUrl="https://richerbyfar.com"/>
+            <outline type="rss" text="One Spirit Resources" title="One Spirit Resources" xmlUrl="http://www.onespiritresources.com/xml/onespiritresources_rss.xml" htmlUrl="http://www.onespiritresources.com"/>
+            <outline type="rss" text="Carl McColman" title="Carl McColman" xmlUrl="http://www.patheos.com/blogs/carlmccolman/feed/" htmlUrl="https://www.patheos.com/blogs/carlmccolman"/>
+            <outline type="rss" text="Choshen Farm" title="Choshen Farm" xmlUrl="http://choshenfarm.org/feed/" htmlUrl="https://choshenfarm.org"/>
+            <outline type="rss" text="What is Church? - RSS" title="What is Church? - RSS" xmlUrl="http://www.whatischurch.com/feeds/posts/default?alt=rss" htmlUrl="http://www.whatischurch.com/"/>
+        </outline>
+        <outline text="Miscellaneous" title="Miscellaneous">
+            <outline type="rss" text="Paul Arbair" title="Paul Arbair" xmlUrl="https://paularbair.wordpress.com/feed/" htmlUrl="https://paularbair.wordpress.com"/>
+            <outline type="rss" text="KeeFox" title="KeeFox" xmlUrl="http://feeds.feedburner.com/keefox" htmlUrl="http://keefox.org/"/>
+            <outline type="rss" text="Zen Habits" title="Zen Habits" xmlUrl="http://feeds.feedburner.com/zenhabits" htmlUrl="http://zenhabits.net"/>
+            <outline type="rss" text="MakeUseOf" title="MakeUseOf" xmlUrl="http://feeds.feedburner.com/Makeuseof" htmlUrl="https://www.makeuseof.com"/>
+            <outline type="rss" text="PyMOTW – Doug Hellmann" title="PyMOTW – Doug Hellmann" xmlUrl="http://feeds.doughellmann.com/PyMOTW" htmlUrl="https://doughellmann.com/blog"/>
+            <outline type="rss" text="Surplus Energy Economics" title="Surplus Energy Economics" xmlUrl="http://surplusenergyeconomics.wordpress.com/feed/" htmlUrl="https://surplusenergyeconomics.wordpress.com"/>
+            <outline type="rss" text="Lifehacker" title="Lifehacker" xmlUrl="http://feeds.gawker.com/lifehacker/full" htmlUrl="https://lifehacker.com"/>
+            <outline type="rss" text="George Monbiot" title="George Monbiot" xmlUrl="http://feeds.feedburner.com/Monbiotcom" htmlUrl="https://www.monbiot.com"/>
+            <outline type="rss" text="More than just bricks…" title="More than just bricks…" xmlUrl="http://thinkbricks.net/?feed=rss2" htmlUrl="http://thinkbricks.net"/>
+        </outline>
+        <outline text="Education" title="Education">
+            <outline type="rss" text="Casting Out Nines" title="Casting Out Nines" xmlUrl="http://chronicle.com/blognetwork/castingoutnines/feed/" htmlUrl="https://www.chronicle.com/blognetwork/castingoutnines"/>
+            <outline type="rss" text="sciencegeekgirl.com" title="sciencegeekgirl.com" xmlUrl="http://feeds.feedburner.com/Sciencegeekgirl" htmlUrl="http://blog.sciencegeekgirl.com"/>
+            <outline type="rss" text="summercherland" title="summercherland" xmlUrl="https://summercherland.wordpress.com/feed/" htmlUrl="https://summercherland.wordpress.com"/>
+            <outline type="rss" text="TeachThought" title="TeachThought" xmlUrl="http://www.teachthought.com/feed/" htmlUrl="https://www.teachthought.com"/>
+            <outline type="rss" text="Punya Mishra's Web" title="Punya Mishra's Web" xmlUrl="http://punya.educ.msu.edu/feed/" htmlUrl="https://www.punyamishra.com"/>
+            <outline type="rss" text="Robert Talbert, PhD" title="Robert Talbert, PhD" xmlUrl="http://www.rtalbert.org/feed.xml" htmlUrl="http://rtalbert.org/"/>
+        </outline>
+        <outline text="YouTube Subscriptions" title="YouTube Subscriptions">
+            <outline type="rss" text="Energy Arts" title="Energy Arts" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC4ABDVU2Aj-jIIk1ca-A6WA" htmlUrl="https://www.youtube.com/channel/UC4ABDVU2Aj-jIIk1ca-A6WA"/>
+            <outline type="rss" text="Matthias Wandel" title="Matthias Wandel" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCckETVOT59aYw80B36aP9vw" htmlUrl="https://www.youtube.com/channel/UCckETVOT59aYw80B36aP9vw"/>
+            <outline type="rss" text="woodcraftmarketing" title="woodcraftmarketing" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCtMbRG_VdfpwloGvY2OjXaQ" htmlUrl="https://www.youtube.com/channel/UCtMbRG_VdfpwloGvY2OjXaQ"/>
+            <outline type="rss" text="Steve Ramsey" title="Steve Ramsey" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCBB7sYb14uBtk8UqSQYc9-w" htmlUrl="https://www.youtube.com/channel/UCBB7sYb14uBtk8UqSQYc9-w"/>
+            <outline type="rss" text="letsgeekup" title="letsgeekup" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCfsIPwIp6jsfiKpNBKRlEUg" htmlUrl="https://www.youtube.com/channel/UCfsIPwIp6jsfiKpNBKRlEUg"/>
+            <outline type="rss" text="WoodWorkWeb" title="WoodWorkWeb" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCMd9JgqSESwyuOs0yuSTlEw" htmlUrl="https://www.youtube.com/channel/UCMd9JgqSESwyuOs0yuSTlEw"/>
+            <outline type="rss" text="Tai Chi Nation" title="Tai Chi Nation" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCE8DFA6M66osBM9D_IPFIqw" htmlUrl="https://www.youtube.com/channel/UCE8DFA6M66osBM9D_IPFIqw"/>
+            <outline type="rss" text="The Wood Whisperer" title="The Wood Whisperer" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCKp44bWWZIiOPShPN_ytShw" htmlUrl="https://www.youtube.com/channel/UCKp44bWWZIiOPShPN_ytShw"/>
+            <outline type="rss" text="The New Cairo" title="The New Cairo" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC8aAsGb5GFFUCx2zZe3RyNw" htmlUrl="https://www.youtube.com/channel/UC8aAsGb5GFFUCx2zZe3RyNw"/>
+            <outline type="rss" text="Wireless Philosophy" title="Wireless Philosophy" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCpvhlSLzg2LT89FNUuN-Sig" htmlUrl="https://www.youtube.com/channel/UCpvhlSLzg2LT89FNUuN-Sig"/>
+            <outline type="rss" text="choshenfarm" title="choshenfarm" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCmYBnTxttnfXacnweLx3BNQ" htmlUrl="https://www.youtube.com/channel/UCmYBnTxttnfXacnweLx3BNQ"/>
+            <outline type="rss" text="Dr Paul Lam" title="Dr Paul Lam" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCwPaMEomSAE522FHtGpafcw" htmlUrl="https://www.youtube.com/channel/UCwPaMEomSAE522FHtGpafcw"/>
+            <outline type="rss" text="Corey Schafer" title="Corey Schafer" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCCezIgC97PvUuR4_gbFUs5g" htmlUrl="https://www.youtube.com/channel/UCCezIgC97PvUuR4_gbFUs5g"/>
+            <outline type="rss" text="William Ng" title="William Ng" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCcdLKZkv7kY0Ov5RxjyrZAw" htmlUrl="https://www.youtube.com/channel/UCcdLKZkv7kY0Ov5RxjyrZAw"/>
+            <outline type="rss" text="sentdex" title="sentdex" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCfzlCWGWYyIQ0aLC5w48gBQ" htmlUrl="https://www.youtube.com/channel/UCfzlCWGWYyIQ0aLC5w48gBQ"/>
+            <outline type="rss" text="Sergio Acuña Padin" title="Sergio Acuña Padin" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC7w6Xs8EduiNp6_mcZLJHdQ" htmlUrl="https://www.youtube.com/channel/UC7w6Xs8EduiNp6_mcZLJHdQ"/>
+            <outline type="rss" text="Max Goodridge" title="Max Goodridge" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCAx4nmhI7S1RcPiaG-Uw0tg" htmlUrl="https://www.youtube.com/channel/UCAx4nmhI7S1RcPiaG-Uw0tg"/>
+            <outline type="rss" text="Jay Bates" title="Jay Bates" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC-7XY-W_C84cW2MNqujgFpg" htmlUrl="https://www.youtube.com/channel/UC-7XY-W_C84cW2MNqujgFpg"/>
+            <outline type="rss" text="Brian Will" title="Brian Will" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCseUQK4kC3x2x543nHtGpzw" htmlUrl="https://www.youtube.com/channel/UCseUQK4kC3x2x543nHtGpzw"/>
+            <outline type="rss" text="Master Code Online" title="Master Code Online" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCbhm6TbMBTWn_GxrIbPFapA" htmlUrl="https://www.youtube.com/channel/UCbhm6TbMBTWn_GxrIbPFapA"/>
+            <outline type="rss" text="Peta Hewitt" title="Peta Hewitt" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC319W9__DFTzcLYSyPBGlTw" htmlUrl="https://www.youtube.com/channel/UC319W9__DFTzcLYSyPBGlTw"/>
+            <outline type="rss" text="Charles Neil Woodworking" title="Charles Neil Woodworking" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCUgl-M-8eVLCs5OwGx9CLsg" htmlUrl="https://www.youtube.com/channel/UCUgl-M-8eVLCs5OwGx9CLsg"/>
+            <outline type="rss" text="Jeremy Colvin" title="Jeremy Colvin" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCL8aQN_2l8g80Kq6FHi1npg" htmlUrl="https://www.youtube.com/channel/UCL8aQN_2l8g80Kq6FHi1npg"/>
+            <outline type="rss" text="kennyearrings1" title="kennyearrings1" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCJlX2V2SHUvbQEFdyQHoTSA" htmlUrl="https://www.youtube.com/channel/UCJlX2V2SHUvbQEFdyQHoTSA"/>
+            <outline type="rss" text="Ahmed.C" title="Ahmed.C" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCtMFWh8kdIr_D2GTDu6T40w" htmlUrl="https://www.youtube.com/channel/UCtMFWh8kdIr_D2GTDu6T40w"/>
+            <outline type="rss" text="Jeremy Schmidt" title="Jeremy Schmidt" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC0T7tvy44mlQCjaTtparOZw" htmlUrl="https://www.youtube.com/channel/UC0T7tvy44mlQCjaTtparOZw"/>
+            <outline type="rss" text="Chris Cheng" title="Chris Cheng" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC85gmzmjAabOKnIldTeYJxg" htmlUrl="https://www.youtube.com/channel/UC85gmzmjAabOKnIldTeYJxg"/>
+            <outline type="rss" text="Johanna Basford" title="Johanna Basford" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC0_f-dNMzmh1IrouyNog4IQ" htmlUrl="https://www.youtube.com/channel/UC0_f-dNMzmh1IrouyNog4IQ"/>
+            <outline type="rss" text="King Arthur Flour" title="King Arthur Flour" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCUvUKGDBCqJzV4OwJkQWCHg" htmlUrl="https://www.youtube.com/channel/UCUvUKGDBCqJzV4OwJkQWCHg"/>
+            <outline type="rss" text="Chris Vaden" title="Chris Vaden" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCQ7IJztyOJOj7-8fBQwxRdg" htmlUrl="https://www.youtube.com/channel/UCQ7IJztyOJOj7-8fBQwxRdg"/>
+            <outline type="rss" text="Laurens Valk" title="Laurens Valk" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCIgpNsEkrAxDPVaigFddJIg" htmlUrl="https://www.youtube.com/channel/UCIgpNsEkrAxDPVaigFddJIg"/>
+            <outline type="rss" text="JetBrainsTV" title="JetBrainsTV" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCGp4UBwpTNegd_4nCpuBcow" htmlUrl="https://www.youtube.com/channel/UCGp4UBwpTNegd_4nCpuBcow"/>
+            <outline type="rss" text="Builderdude35" title="Builderdude35" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCuXq-jiU0ANeBcF_Tvq1D7g" htmlUrl="https://www.youtube.com/channel/UCuXq-jiU0ANeBcF_Tvq1D7g"/>
+            <outline type="rss" text="MobileTechReview" title="MobileTechReview" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCW6J17hZ_Vgr6cQgd_kHt5A" htmlUrl="https://www.youtube.com/channel/UCW6J17hZ_Vgr6cQgd_kHt5A"/>
+            <outline type="rss" text="America's Test Kitchen" title="America's Test Kitchen" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw" htmlUrl="https://www.youtube.com/channel/UCxAS_aK7sS2x_bqnlJHDSHw"/>
+            <outline type="rss" text="You Need A Budget (YNAB)" title="You Need A Budget (YNAB)" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCuIUGmbCDklkDCDm-cQqv2g" htmlUrl="https://www.youtube.com/channel/UCuIUGmbCDklkDCDm-cQqv2g"/>
+            <outline type="rss" text="FineWoodworking" title="FineWoodworking" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC47EhkMV18WlRqV3VhUH3yg" htmlUrl="https://www.youtube.com/channel/UC47EhkMV18WlRqV3VhUH3yg"/>
+            <outline type="rss" text="CherTheFire" title="CherTheFire" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC_gN1zTu3--GVVu__wK9DZg" htmlUrl="https://www.youtube.com/channel/UC_gN1zTu3--GVVu__wK9DZg"/>
+            <outline type="rss" text="CSE 231" title="CSE 231" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCeRKhmesnFESoxFB1Nyl3Cg" htmlUrl="https://www.youtube.com/channel/UCeRKhmesnFESoxFB1Nyl3Cg"/>
+        </outline>
+        <outline text="eTOCs" title="eTOCs">
+            <outline type="rss" text="Science: Current Issue" title="Science: Current Issue" xmlUrl="http://www.sciencemag.org/rss/current.xml" htmlUrl="http://science.sciencemag.org"/>
+            <outline type="rss" text="Review of Educational Research" title="Review of Educational Research" xmlUrl="http://rer.sagepub.com/rss/current.xml" htmlUrl="http://rer.sagepub.com"/>
+            <outline type="rss" text="Educational Research" title="Educational Research" xmlUrl="http://www.tandfonline.com/action/showFeed?ui=0&amp;mi=5ltkep&amp;ai=12a&amp;jc=rere20&amp;type=etoc&amp;feed=rss" htmlUrl="https://www.tandfonline.com/loi/rere20?ai=12a&amp;mi=5ltkep&amp;af=R"/>
+            <outline type="rss" text="Nature - Issue - nature.com science feeds" title="Nature - Issue - nature.com science feeds" xmlUrl="http://www.nature.com/nature/current_issue/rss" htmlUrl="http://feeds.nature.com/nature/rss/current"/>
+            <outline type="rss" text="Veterinary Clinics of North America: Small Animal Practice" title="Veterinary Clinics of North America: Small Animal Practice" xmlUrl="http://rss.sciencedirect.com/publication/science/12932" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="Teaching &amp; Learning in Medicine" title="Teaching &amp; Learning in Medicine" xmlUrl="http://www.tandfonline.com/action/showFeed?ui=0&amp;mi=5ltkep&amp;ai=2bs&amp;jc=htlm20&amp;type=etoc&amp;feed=rss" htmlUrl="https://www.tandfonline.com/loi/htlm20?ai=2bs&amp;mi=5ltkep&amp;af=R"/>
+            <outline type="rss" text="Journal of the American Veterinary Medical Association" title="Journal of the American Veterinary Medical Association" xmlUrl="http://avmajournals.avma.org/action/showFeed?ui=1no3&amp;mi=0&amp;ai=rs&amp;jc=javma&amp;type=etoc&amp;feed=rss" htmlUrl="https://avmajournals.avma.org/loi/javma?ai=rs&amp;mi=0&amp;af=R"/>
+            <outline type="rss" text="BMC Medical Education" title="BMC Medical Education" xmlUrl="http://www.biomedcentral.com/bmcmededuc/rss/" htmlUrl="http://bmcmededuc.biomedcentral.com"/>
+            <outline type="rss" text="American Journal of Veterinary Research" title="American Journal of Veterinary Research" xmlUrl="http://avmajournals.avma.org/action/showFeed?ui=1no3&amp;mi=0&amp;ai=rt&amp;jc=ajvr&amp;type=etoc&amp;feed=rss" htmlUrl="https://avmajournals.avma.org/loi/ajvr?ai=rt&amp;mi=0&amp;af=R"/>
+            <outline type="rss" text="American Journal of Medicine" title="American Journal of Medicine" xmlUrl="http://rss.sciencedirect.com/publication/science/5195" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="Equine Veterinary Journal" title="Equine Veterinary Journal" xmlUrl="http://onlinelibrary.wiley.com/rss/journal/10.1001/(ISSN)2042-3306" htmlUrl="https://onlinelibrary.wiley.com/journal/20423306?af=R"/>
+            <outline type="rss" text="Educational Researcher" title="Educational Researcher" xmlUrl="http://edr.sagepub.com/rss/current.xml" htmlUrl="http://edr.sagepub.com"/>
+            <outline type="rss" text="Physiological Reviews current issue" title="Physiological Reviews current issue" xmlUrl="http://physrev.physiology.org/rss/current.xml" htmlUrl="http://physrev.physiology.org"/>
+            <outline type="rss" text="Endocrine Reviews Current Issue" title="Endocrine Reviews Current Issue" xmlUrl="http://edrv.endojournals.org/rss/current.xml" htmlUrl="http://edrv.endojournals.org"/>
+            <outline type="rss" text="Advances in Health Sciences Education" title="Advances in Health Sciences Education" xmlUrl="http://link.springer.com/search.rss?facet-content-type=Article&amp;facet-journal-id=10459&amp;channel-name=Advances%20in%20Health%20Sciences%20Education" htmlUrl="http://rd.springer.com"/>
+            <outline type="rss" text="Journal of Veterinary Internal Medicine" title="Journal of Veterinary Internal Medicine" xmlUrl="http://www3.interscience.wiley.com/rss/journal/118902531" htmlUrl="https://onlinelibrary.wiley.com/journal/19391676?af=R"/>
+            <outline type="rss" text="Educational Research Review" title="Educational Research Review" xmlUrl="http://rss.sciencedirect.com/publication/science/29708" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="American Journal of Education" title="American Journal of Education" xmlUrl="http://www.journals.uchicago.edu/action/showFeed?ui=0&amp;mi=0&amp;ai=se&amp;jc=aje&amp;type=etoc&amp;feed=rss" htmlUrl="https://www.journals.uchicago.edu/loi/aje?ai=se&amp;mi=0&amp;af=R"/>
+            <outline type="rss" text="Journal of Small Animal Practice" title="Journal of Small Animal Practice" xmlUrl="http://www3.interscience.wiley.com/rss/journal/117961497" htmlUrl="https://onlinelibrary.wiley.com/journal/17485827?af=R"/>
+            <outline type="rss" text="Veterinary Clinics of North America: Food Animal Practice" title="Veterinary Clinics of North America: Food Animal Practice" xmlUrl="http://rss.sciencedirect.com/publication/science/25745" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="Medical Education" title="Medical Education" xmlUrl="http://www3.interscience.wiley.com/rss/journal/117964731" htmlUrl="https://onlinelibrary.wiley.com/journal/13652923?af=R"/>
+            <outline type="rss" text="Veterinary Clinics of North America: Equine Practice" title="Veterinary Clinics of North America: Equine Practice" xmlUrl="http://rss.sciencedirect.com/publication/science/25744" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="Medical Teacher" title="Medical Teacher" xmlUrl="http://informahealthcare.com/action/showFeed?ui=0&amp;mi=3oijqz&amp;ai=1lgh&amp;jc=mte&amp;type=etoc&amp;feed=rss" htmlUrl="http://informahealthcare.com/loi/mte?ai=1lgh&amp;mi=3oijqz&amp;af=R"/>
+            <outline type="rss" text="Journal of Applied Physiology current issue" title="Journal of Applied Physiology current issue" xmlUrl="http://jap.physiology.org/rss/current.xml" htmlUrl="http://jap.physiology.org"/>
+            <outline type="rss" text="Journal of Veterinary Emergency and Critical Care" title="Journal of Veterinary Emergency and Critical Care" xmlUrl="http://www3.interscience.wiley.com/rss/journal/117981600" htmlUrl="https://onlinelibrary.wiley.com/journal/14764431?af=R"/>
+            <outline type="rss" text="Equine Veterinary Education" title="Equine Veterinary Education" xmlUrl="http://onlinelibrary.wiley.com/rss/journal/10.1001/(ISSN)2042-3292" htmlUrl="https://onlinelibrary.wiley.com/journal/20423292?af=R"/>
+            <outline type="rss" text="New England Journal of Medicine" title="New England Journal of Medicine" xmlUrl="http://content.nejm.org/rss/current.xml" htmlUrl="https://www.nejm.org/"/>
+            <outline type="rss" text="The Veterinary Journal" title="The Veterinary Journal" xmlUrl="http://rss.sciencedirect.com/publication/science/7163" htmlUrl="http://www.sciencedirect.com"/>
+            <outline type="rss" text="Advances in Physiology Education" title="Advances in Physiology Education" xmlUrl="http://advan.physiology.org/rss/current.xml" htmlUrl="http://advan.physiology.org"/>
+            <outline type="rss" text="Academic Medicine" title="Academic Medicine" xmlUrl="http://journals.lww.com/academicmedicine/_layouts/OAKS.Journals/feed.aspx?FeedType=CurrentIssue" htmlUrl="https://journals.lww.com/academicmedicine/pages/currenttoc.aspx"/>
+        </outline>
+    </body>
+</opml>
