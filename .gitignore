@@ -1,8 +1,6 @@
 .history/
 .vscode/
 __pycache__/
-old versions/
-github.txt
 scratch.py
 *.pyc
 *.orig
