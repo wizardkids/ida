@@ -31,18 +31,20 @@ Features:
 """
 
 
+import json
 import os
-import re
-import textwrap
-import webbrowser
-from inspect import getmembers, isfunction, getfullargspec
+from datetime import datetime
+from inspect import getfullargspec, getmembers, isfunction
 from pprint import pprint
 from sys import modules
 
 import feedparser
 import requests
+
+import feedparser
+import requests
 import urlwatch
-import json
+import urlwatch
 
 
 def print_all_functions():
@@ -411,7 +413,6 @@ def get_revision_number():
     """
     Manually run this function to get a revision number by uncommenting the first line of code under "if __name__ == '__main__':"
     """
-    from datetime import datetime
 
     start_date = datetime(2019, 6, 10)
     tday = datetime.today()
