@@ -8,12 +8,46 @@
     -- set up remote repository with three branches
     -- modify .gitignore appropriately
     -- establish initial functions, subject to massive change
-        -- about()
-        -- fold()
-        -- get_latest_feed()
-        -- get_revision_number()
-        -- get_rss_status()
-        -- import_OPML()
-        -- print_all_functions()
-        -- show_HTML_string()
-        -- show_lastest_rss()
+        about()
+            Information about the author and product.
+
+        fold(txt)
+            Utility function that textwraps 'txt' 45 characters wide.
+
+        get_latest_feed(rss)
+            Utility function to print information about a news feed. Used only by the developer.
+
+        get_revision_number()
+            Manually run this function to get a revision number by
+        uncommenting the first line of code under "if __name__ == '__main__':"
+
+        get_url_status(url)
+            Get the status code for a URL.
+
+        import_OPML()
+            Parse an OPML file and put group names, RSS titles, and RSS addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2]]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
+
+            Output: {myFeeds} is written to myFeeds.json.
+
+        inquire_feed(rss)
+            Check a website to see if it has changed.
+
+        last_ten(rss)
+            Return the titles of the latest ten pages for a website as a list of titles.
+
+        pick_website()
+            From a list of feeds, pick one and return the RSS address.
+
+        print_all_functions()
+            Print all the functions, with their docStrings, used in this program. This function is not used, except by the developer.
+
+        retrieve_myFeeds()
+            Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Each feed in 'value' contains two elements: title and RSS address.
+
+        show_lastest_rss(rss)
+            Show an RSS website in a browser window.
+
+    -- import data from OPML file
+    -- create myFeeds dictionary holding RSS data
+    -- print out myFeeds in a formatted list
+    -- check a website for changes, returning status 304 if not changed
