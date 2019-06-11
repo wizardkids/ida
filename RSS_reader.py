@@ -99,7 +99,7 @@ def retrieve_myFeeds():
 
 def inquire_feed(rss):
     """
-    Check a website to see if it has changed.
+    Access a feed and return its status code.
     """
     # -- https://pythonhosted.org/feedparser/http-etag.html
 
@@ -128,6 +128,50 @@ def inquire_feed(rss):
         feed_update = feedparser.parse(rss)
 
     return feed_update.status
+
+
+def find_all_changes(myFeeds):
+    """
+    Go through the RSS feeds in {myFeeds} and return a list of feeds that have changed since last access. Also return lists of changed sites, as well as lists of sites by status code.
+    """
+    rss_list, changed_sites, unchanged_sites = [], [], []
+    other_sites, bad_sites = [], []
+    site_200, site_301, site_302, site_303 = [], [], [], []
+    site_403, site_410 = [], []
+
+    # iterate through {myFeeds} and get each RSS feed
+    for group in myFeeds.values():
+        # each group contains a list of websites for a given category.
+        # so iterate through each item of each list
+        for i in group:
+            rss_list.append(i[1])
+
+    for site in rss_list:
+        try:
+            status = inquire_feed(site)
+        except AttributeError:
+            bad_sites.append(site)
+        if status == 200:               # 200 OK
+            site_200.append(site)
+        elif status == 301:             # 301 Moved Permanently
+            site_301.append(site)
+        elif status == 302:             # 302 Found
+            site_302.append(site)
+        elif status == 303:             # 303 See Other
+            site_303.append(site)
+        elif status == 304:             # 304 Not Modified
+            unchanged_sites.append(site)
+        elif status == 403:             # 403 Forbidden
+            site_403.append(site)
+        elif status == 410:             # 410 Gone
+            site_410.append(site)
+        else:
+            other_sites.append((status, site))
+
+        if status != 304:
+            changed_sites.append(site)
+
+    return changed_sites, unchanged_sites, other_sites, bad_sites, site_200, site_301, site_302, site_303, site_403, site_410
 
 
 def get_url_status(url):
@@ -295,48 +339,6 @@ def import_OPML():
     return err
 
 
-def fold(txt):
-    """
-    Utility function that textwraps 'txt' 45 characters wide.
-    """
-    return textwrap.fill(txt, width=45)
-
-
-def about():
-    """
-    Information about the author and product.
-    """
-    print('='*45)
-
-    txt1 = 'ida - a small news feed reader\n' + 'version: ' + \
-        version_num[0:18] + '\n' + \
-        ' python: v3.7\n' + ' author: Richard E. Rawson\n\n'
-
-    txt2 = 'ida is named after Ida B. Wells (July 16, 1862 to March 25, 1931), was an African-American journalist, abolitionist and feminist who led an anti-lynching crusade in the United States in the 1890s. She went on to found and become integral in groups striving for African-American justice.'
-
-    print('\n'.join([fold(txt1) for txt1 in txt1.splitlines()]))
-    print('\n'.join([fold(txt2) for txt2 in txt2.splitlines()]))
-
-    print('='*45)
-    return
-
-
-def get_revision_number():
-    """
-    Manually run this function to get a revision number by uncommenting the first line of code under "if __name__ == '__main__':"
-    """
-    from datetime import datetime
-
-    start_date = datetime(2019, 6, 10)
-    tday = datetime.today()
-    revision_delta = datetime.today() - start_date
-
-    print("\nREVISION NUMBER:", revision_delta.days)
-    print('This is the number of days since ', start_date, '\n',
-          'the date that the first version of "ida" was launched.\n\n', sep='')
-    return None
-
-
 def pick_website():
     """
     From a list of feeds, pick one and return the RSS address.
@@ -379,13 +381,55 @@ def pick_website():
     return rss
 
 
+def fold(txt):
+    """
+    Utility function that textwraps 'txt' 45 characters wide.
+    """
+    return textwrap.fill(txt, width=45)
+
+
+def about():
+    """
+    Information about the author and product.
+    """
+    print('='*45)
+
+    txt1 = 'ida - a small news feed reader\n' + 'version: ' + \
+        version_num[0:18] + '\n' + \
+        ' python: v3.7\n' + ' author: Richard E. Rawson\n\n'
+
+    txt2 = 'ida is named after Ida B. Wells (July 16, 1862 to March 25, 1931), was an African-American journalist, abolitionist and feminist who led an anti-lynching crusade in the United States in the 1890s. She went on to found and become integral in groups striving for African-American justice.'
+
+    print('\n'.join([fold(txt1) for txt1 in txt1.splitlines()]))
+    print('\n'.join([fold(txt2) for txt2 in txt2.splitlines()]))
+
+    print('='*45)
+    return
+
+
+def get_revision_number():
+    """
+    Manually run this function to get a revision number by uncommenting the first line of code under "if __name__ == '__main__':"
+    """
+    from datetime import datetime
+
+    start_date = datetime(2019, 6, 10)
+    tday = datetime.today()
+    revision_delta = datetime.today() - start_date
+
+    print("\nREVISION NUMBER:", revision_delta.days)
+    print('This is the number of days since ', start_date, '\n',
+          'the date that the first version of "ida" was launched.\n\n', sep='')
+    return None
+
+
 if __name__ == '__main__':
 
     # get_revision_number()
     version_num = '0.1 rev1'
     print('ida ' + version_num[0:3] + ' - a small news feed reader')
 
-    print_all_functions()
+    # print_all_functions()
 
     # -- about this project
     # about()
@@ -405,12 +449,28 @@ if __name__ == '__main__':
     # -- check to see if feed has changed; return status code
     #  -- status is 304 if no change
     # status = inquire_feed('https://hebendsdown.wordpress.com/feed/')
+    # print(status)
 
     # -- pick one website from the list and return the URL (not RSS)
     # url = pick_website()
 
-    # # -- display an RSS address, if it exists, in a browser window
+    # -- display an RSS address, if it exists, in a browser window
     # if get_url_status(url) == 200:
     #     show_lastest_rss(url)
     # else:
     #     print('Sorry. We could not find ', url, sep='')
+
+    # -- go through the entire list of RSS addresses and return a list of changed sites
+    # changed_sites, unchanged_sites, other_sites, bad_sites, site_200, site_301, site_302, site_303, site_403, site_410 = find_all_changes(
+    #     myFeeds)
+
+    # print('\nchanged_sites\n', changed_sites, sep='')
+    # print('\nunchanged_sites\n', unchanged_sites, sep='')
+    # print('\nbad_sites\n', bad_sites, sep='')
+    # print('\nsite_301\n', site_301, sep='')
+    # print('\nsite_302\n', site_302, sep='')
+    # print('\nsite_303\n', site_303, sep='')
+    # print('\nsite_403\n', site_403, sep='')
+    # print('\nsite_410\n', site_410, sep='')
+    # print('\nsite_200\n', site_200, sep='')
+    # print('\nother_sites\n', other_sites, sep='')

@@ -11,6 +11,9 @@
         about()
             Information about the author and product.
 
+        find_all_changes(myFeeds)
+            Go through the RSS feeds in {myFeeds} and return a list of feeds that have changed since last access. Also return lists of changed sites, as well as lists of sites by status code.
+
         fold(txt)
             Utility function that textwraps 'txt' 45 characters wide.
 
@@ -18,19 +21,20 @@
             Utility function to print information about a news feed. Used only by the developer.
 
         get_revision_number()
-            Manually run this function to get a revision number by
-        uncommenting the first line of code under "if __name__ == '__main__':"
+            Manually run this function to get a revision number by uncommenting
+        the first line of code under "if __name__ == '__main__':"
 
         get_url_status(url)
             Get the status code for a URL.
 
         import_OPML()
-            Parse an OPML file and put group names, RSS titles, and RSS addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2]]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
+            Parse an OPML file and put group names, RSS titles, and RSS addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2]]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file
+        is overwritten each time an OPML file is read.
 
             Output: {myFeeds} is written to myFeeds.json.
 
         inquire_feed(rss)
-            Check a website to see if it has changed.
+            Access a feed and return its status code.
 
         last_ten(rss)
             Return the titles of the latest ten pages for a website as a list of titles.
@@ -46,8 +50,9 @@
 
         show_lastest_rss(rss)
             Show an RSS website in a browser window.
-
+            
     -- import data from OPML file
     -- create myFeeds dictionary holding RSS data
+    -- update myFeeds to include URL and a boolean for "marked" or "unmarked"
     -- print out myFeeds in a formatted list
-    -- check a website for changes, returning status 304 if not changed
+    -- check a website for changes, returning status codes and sorting sites into "buckets" (lists) for status codes 200, 301, 302, 303, 304, 403, and 410
