@@ -33,6 +33,9 @@ Features:
 
 import json
 import os
+import re
+import textwrap
+import webbrowser
 from datetime import datetime
 from inspect import getfullargspec, getmembers, isfunction
 from pprint import pprint
@@ -40,16 +43,53 @@ from sys import modules
 
 import feedparser
 import requests
+import urlwatch
 
-import feedparser
-import requests
-import urlwatch
-import urlwatch
+
+def get_feed_info(rss):
+    """
+    Utility function to print information about a news feed. USED ONLY BY THE DEVELOPER.
+    """
+    try:
+        newsfeed = feedparser.parse(rss)
+        # entries is the only dict in [newsfeed_keys]
+        newsfeed_keys = ['feed', 'entries', 'bozo', 'headers', 'updated',
+                         'updated_parsed', 'href', 'status', 'encoding', 'version', 'namespaces']
+
+        entries_keys = ['title', 'title_detail', 'links', 'link', 'comments', 'published', 'published_parsed', 'authors', 'author',
+                        'author_detail', 'tags', 'id', 'guidislink', 'summary', 'summary_detail', 'content', 'wfw_commentrss', 'slash_comments', 'media_content']
+
+        # print site information
+        print('\nSite title:', newsfeed['feed']['title'])
+        print('\nSite link:', newsfeed['feed']['link'])
+        print('\nSite subtitle:', newsfeed['feed']['subtitle'])
+        print('\nSite updated_parsed:', newsfeed['feed']['updated_parsed'])
+        try:
+            print('\nSite eTag:', newsfeed['feed']['eTag'])
+        except:
+            pass
+        try:
+            print('\nSite modified:', newsfeed['feed']['modified'])
+        except:
+            pass
+
+        # print page information
+        print('\nPage title:', newsfeed['entries'][0]['title'])
+        print('\nPage id:', newsfeed['entries'][0]['id'])
+        print('\nPage published:', newsfeed['entries'][0]['published'])
+
+        # get the content for first item in [entries]
+        c = newsfeed['entries'][0]['content'][0]['value']
+        # print(c)
+    except IndexError:
+        pass
+
+    return
 
 
 def print_all_functions():
     """
-    Print all the functions, with their docStrings, used in this program. This function is not used, except by the developer.
+    Print all the functions, with their docStrings, used in this program. USED ONLY BY THE DEVELOPER
     """
     module_functions = []
 
@@ -79,190 +119,9 @@ def print_all_functions():
     return
 
 
-def retrieve_myFeeds():
-    """
-    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Each feed in 'value' contains two elements: title and RSS address.
-    """
-    try:
-        with open("myFeeds.json", 'r') as file:
-            myFeeds = json.load(file)
-    except FileNotFoundError:
-        myFeeds = {}
-
-    # for k, v in myFeeds.items():
-        # print('\n', k, sep='')
-        # for ndx, i in enumerate(v):
-        # print(' '*5, ndx+1, ': ', i[0], sep='')
-        # print(' '*5, ndx+1, ': ', i[0], '\n', ' '*10, i[1], sep='')
-        # x = input('PRESS <ENTER> TO CONTINUE...')
-
-    return myFeeds
-
-
-def inquire_feed(rss):
-    """
-    Access a feed and return its status code.
-    """
-    # -- https://pythonhosted.org/feedparser/http-etag.html
-
-    # first request
-    feed = feedparser.parse(rss)
-
-    # store the etag and modified; either or both may not exist!
-    try:
-        last_etag = feed.etag
-    except AttributeError:
-        last_etag = ''
-    try:
-        last_modified = feed.modified
-    except AttributeError:
-        last_modified = ''
-
-    # check if new version exists by sending etag and modified back to the server
-    if last_etag and last_modified:
-        feed_update = feedparser.parse(
-            rss, etag=last_etag, modified=last_modified)
-    elif last_etag and not last_modified:
-        feed_update = feedparser.parse(rss, etag=last_etag)
-    elif last_modified and not last_etag:
-        feed_update = feedparser.parse(rss, modified=last_modified)
-    else:
-        feed_update = feedparser.parse(rss)
-
-    return feed_update.status
-
-
-def find_all_changes(myFeeds):
-    """
-    Go through the RSS feeds in {myFeeds} and return a list of feeds that have changed since last access. Also return lists of changed sites, as well as lists of sites by status code.
-    """
-    rss_list, changed_sites, unchanged_sites = [], [], []
-    other_sites, bad_sites = [], []
-    site_200, site_301, site_302, site_303 = [], [], [], []
-    site_403, site_410 = [], []
-
-    # iterate through {myFeeds} and get each RSS feed
-    for group in myFeeds.values():
-        # each group contains a list of websites for a given category.
-        # so iterate through each item of each list
-        for i in group:
-            rss_list.append(i[1])
-
-    for site in rss_list:
-        try:
-            status = inquire_feed(site)
-        except AttributeError:
-            bad_sites.append(site)
-        if status == 200:               # 200 OK
-            site_200.append(site)
-        elif status == 301:             # 301 Moved Permanently
-            site_301.append(site)
-        elif status == 302:             # 302 Found
-            site_302.append(site)
-        elif status == 303:             # 303 See Other
-            site_303.append(site)
-        elif status == 304:             # 304 Not Modified
-            unchanged_sites.append(site)
-        elif status == 403:             # 403 Forbidden
-            site_403.append(site)
-        elif status == 410:             # 410 Gone
-            site_410.append(site)
-        else:
-            other_sites.append((status, site))
-
-        if status != 304:
-            changed_sites.append(site)
-
-    return changed_sites, unchanged_sites, other_sites, bad_sites, site_200, site_301, site_302, site_303, site_403, site_410
-
-
-def get_url_status(url):
-    """
-    Get the status code for a URL.
-    """
-    # set the headers like we are a browser
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    # download the url
-    r = requests.get(url, headers=headers)
-
-    return r.status_code
-
-
-# ? def show_HTML_string(HTML_string):
-# ?     """
-# ?     Given a string, convert the string into an HTML file (temp.html) and  ?display in a browser window.
-# ?     """
-# ?     path = os.path.abspath('temp.html')
-# ?     url = 'file://' + path
-
-# ?     with open(path, 'w') as f:
-# ?         f.write(HTML_string)
-# ?     webbrowser.open(url)
-# ?     return None
-
-
-def get_latest_feed(rss):
-    """
-    Utility function to print information about a news feed. Used only by the developer.
-    """
-    try:
-        newsfeed = feedparser.parse(rss)
-        # entries is the only dict in [newsfeed_keys]
-        newsfeed_keys = ['feed', 'entries', 'bozo', 'headers', 'updated',
-                         'updated_parsed', 'href', 'status', 'encoding', 'version', 'namespaces']
-
-        entries_keys = ['title', 'title_detail', 'links', 'link', 'comments', 'published', 'published_parsed', 'authors', 'author',
-                        'author_detail', 'tags', 'id', 'guidislink', 'summary', 'summary_detail', 'content', 'wfw_commentrss', 'slash_comments', 'media_content']
-
-        # print site information
-        print('\nSite title:', newsfeed['feed']['title'])
-        print('\nSite link:', newsfeed['feed']['link'])
-        print('\nSite subtitle:', newsfeed['feed']['subtitle'])
-        print('\nSite updated:', newsfeed['feed']['updated'])
-
-        # print page information
-        print('\nPage title:', newsfeed['entries'][0]['title'])
-        print('\nPage id:', newsfeed['entries'][0]['id'])
-        print('\nPage published:', newsfeed['entries'][0]['published'])
-
-        # get the content for first item in [entries]
-        c = newsfeed['entries'][0]['content'][0]['value']
-        # print(c)
-    except IndexError:
-        pass
-
-    return
-
-
-def last_ten(rss):
-    """
-    Return the titles of the latest ten pages for a website as a list of titles.
-    """
-    newsfeed = feedparser.parse(rss)
-    num_entries = len(newsfeed['entries'])
-
-    last_ten_titles = []
-    for i in range(num_entries):
-        last_ten_titles.append(newsfeed['entries'][i]['title'])
-
-    return last_ten_titles
-
-
-def show_lastest_rss(rss):
-    """
-    Show an RSS website in a browser window.
-    """
-    try:
-        webbrowser.open(rss)
-    except TypeError:
-        pass
-    return
-
-
 def import_OPML():
     """
-    Parse an OPML file and put group names, RSS titles, and RSS addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2]]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
+    Parse an OPML file and put group names, feed titles, and feed addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2]]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
 
     Output: {myFeeds} is written to myFeeds.json.
     """
@@ -313,8 +172,13 @@ def import_OPML():
                 if m_HTML:
                     this_URL = m_HTML.group('URL')[:-1]  # deletes the final "
                 if m_Feed_Title and m_RSS and m_HTML:
-                    marked = False
-                    new_feed = (this_title, this_RSS, this_URL, marked)
+                    # add placeholder feed.eTag, feed.modified, feed.updated_parsed
+                    new_feed = (this_title,
+                                this_RSS,
+                                this_URL,
+                                '',
+                                '',
+                                '')
                     current_feed = myFeeds[this_group]
                     current_feed.append(new_feed)
                     myFeeds.update({this_group: current_feed})
@@ -341,9 +205,168 @@ def import_OPML():
     return err
 
 
+def retrieve_myFeeds():
+    """
+    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Each feed in 'value' contains two elements: title and RSS address.
+    """
+    try:
+        with open("myFeeds.json", 'r') as file:
+            myFeeds = json.load(file)
+    except FileNotFoundError:
+        myFeeds = {}
+
+    # for k, v in myFeeds.items():
+        # print('\n', k, sep='')
+        # for ndx, i in enumerate(v):
+        # print(' '*5, ndx+1, ': ', i[0], sep='')
+        # print(' '*5, ndx+1, ': ', i[0], '\n', ' '*10, i[1], sep='')
+        # x = input('PRESS <ENTER> TO CONTINUE...')
+
+    return myFeeds
+
+
+def get_feed_status(rss, myFeeds):
+    """
+    Access a feed and return its status code.
+    """
+    # -- https://pythonhosted.org/feedparser/http-etag.html
+
+    # todo -- update eTag, modified, or updated_parsed in {myFeeds}, changed or not
+    # ? The basic concept is that a feed publisher may provide a special HTTP header, called an ETag, when it publishes a feed. You should send this ETag back to the server on subsequent requests. If the feed has not changed since the last time you requested it, the server will return a special HTTP status code (304) and no feed data.
+    # ? see: https://fishbowl.pastiche.org/2002/10/21/http_conditional_get_for_rss_hackers
+    # todo -- if the feed has changed, add the site info from {myFeeds} to a temporary list called [updated_feeds]
+    # todo -- create a new function to create updated_feeds and to modify {myFeeds} with new eTag, modified, and updated_parsed
+
+    # first request
+    feed = feedparser.parse(rss)
+
+    # store the etag, modified, updated_parsed; any or all may not exist!
+    try:
+        last_etag = feed.etag
+    except AttributeError:
+        last_etag = ''
+    try:
+        last_modified = feed.modified
+    except AttributeError:
+        last_modified = ''
+    try:
+        last_updated = feed.updated_parsed
+    except AttributeError:
+        last_updated = ''
+    # check if new version exists by sending etag and modified back to the server:
+    if last_etag and last_modified:
+        feed_update = feedparser.parse(
+            rss, etag=last_etag, modified=last_modified)
+    elif last_etag and not last_modified:
+        feed_update = feedparser.parse(rss, etag=last_etag)
+    elif last_modified and not last_etag:
+        feed_update = feedparser.parse(rss, modified=last_modified)
+    elif last_updated:
+        feed_update = feedparser.parse(rss, updated_parsed=last_updated)
+    else:
+        feed_update = feedparser.parse(rss)
+
+    return feed_update.status, myFeeds, updated_feeds
+
+
+def find_all_changes(myFeeds):
+    """
+    Go through the RSS feeds in {myFeeds} and return a list of feeds that have changed since last access. Also return list of unreachable sites.
+    """
+    rss_list, changed_sites, unchanged_sites = [], [], []
+    other_sites, bad_sites = [], []
+    site_200, site_301, site_302, site_303 = [], [], [], []
+    site_403, site_410 = [], []
+
+    # iterate through {myFeeds} and get each RSS feed
+    for group in myFeeds.values():
+        # each group contains a list of websites for a given category.
+        # so iterate through each item of each list
+        for i in group:
+            rss_list.append(i[1])
+
+    for site in rss_list:
+        try:
+            status, myFeeds, updated_feeds = get_feed_status(site, myFeeds)
+        except AttributeError:
+            bad_sites.append(site)
+        # if status == 200:               # 200 OK
+        #     site_200.append(site)
+        # elif status == 301:             # 301 Moved Permanently
+        #     site_301.append(site)
+        # elif status == 302:             # 302 Found
+        #     site_302.append(site)
+        # elif status == 303:             # 303 See Other
+        #     site_303.append(site)
+        # elif status == 304:             # 304 Not Modified
+        #     unchanged_sites.append(site)
+        # elif status == 403:             # 403 Forbidden
+        #     site_403.append(site)
+        # elif status == 410:             # 410 Gone
+        #     site_410.append(site)
+        # else:
+        #     other_sites.append((status, site))
+
+        if status != 304:
+            changed_sites.append(site)
+
+    return changed_sites, bad_sites
+
+
+def get_url_status(url):
+    """
+    Get the status code for a URL.
+    """
+    # set the headers like we are a browser
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    # download the url
+    r = requests.get(url, headers=headers)
+
+    return r.status_code
+
+
+# ? def show_HTML_string(HTML_string):
+# ?     """
+# ?     Given a string, convert the string into an HTML file (temp.html) and  ?display in a browser window.
+# ?     """
+# ?     path = os.path.abspath('temp.html')
+# ?     url = 'file://' + path
+
+# ?     with open(path, 'w') as f:
+# ?         f.write(HTML_string)
+# ?     webbrowser.open(url)
+# ?     return None
+
+
+def last_ten(rss):
+    """
+    Return the titles of the latest ten articles for a website as a list of titles.
+    """
+    newsfeed = feedparser.parse(rss)
+    num_entries = len(newsfeed['entries'])
+
+    last_ten_titles = []
+    for i in range(num_entries):
+        last_ten_titles.append(newsfeed['entries'][i]['title'])
+
+    return last_ten_titles
+
+
+def show_lastest_rss(rss):
+    """
+    Show a RSS feed in a browser window.
+    """
+    try:
+        webbrowser.open(rss)
+    except TypeError:
+        pass
+    return
+
+
 def pick_website():
     """
-    From a list of feeds, pick one and return the RSS address.
+    From a list of feeds, pick one and return the feed's RSS address.
     """
     myFeeds = retrieve_myFeeds()
 
@@ -435,8 +458,40 @@ if __name__ == '__main__':
     # -- about this project
     # about()
 
+    """
+    BASIC STRATEGY:
+
+    create myFeeds.json where:
+        - keys: feed groupings
+        - values: list of RSS feeds for each group:
+            _ feed.title, RSS, HTML, feed.etag, feed.modified, feed.updated_parsed
+        -- import_OPML()
+        -- functions that allow editing of myFeeds.json
+
+    get {myFeeds} from json to dictionary
+        --retrieve_myFeeds()
+
+    for each group in {myFeeds}
+        for each feed site:
+            - access site using RSS
+                -- get_feed_status()
+            - compare current feed.eTag and/or feed.modified or feed.updated_parsed with the same values stored in {myFeeds}
+                -- get_feed_status()
+            - if different, store this feed (RSS) in [updated_feeds]
+                -- get_feed_status()
+            - update feed.eTag, feed.modified, or feed.updated.parsed in {myFeeds}
+                -- get_feed_status()
+
+
+    user chooses a feed from [updated_feeds]
+        -- 
+        AND/OR display feed in browser
+        -- 
+
+    """
+
     # -- print various attributes of a single RSS feed
-    # get_latest_feed('https://hebendsdown.wordpress.com/feed/')
+    # get_feed_info('https://hebendsdown.wordpress.com/feed/')
 
     # -- import OPML file and store RSS info in myFeeds.json; return True if successful
     # err = import_OPML()
@@ -449,7 +504,7 @@ if __name__ == '__main__':
 
     # -- check to see if feed has changed; return status code
     #  -- status is 304 if no change
-    # status = inquire_feed('https://hebendsdown.wordpress.com/feed/')
+    # status = get_feed_status('https://hebendsdown.wordpress.com/feed/')
     # print(status)
 
     # -- pick one website from the list and return the URL (not RSS)
@@ -462,8 +517,7 @@ if __name__ == '__main__':
     #     print('Sorry. We could not find ', url, sep='')
 
     # -- go through the entire list of RSS addresses and return a list of changed sites
-    # changed_sites, unchanged_sites, other_sites, bad_sites, site_200, site_301, site_302, site_303, site_403, site_410 = find_all_changes(
-    #     myFeeds)
+    # changed_sites, bad_sites = find_all_changes(myFeeds)
 
     # print('\nchanged_sites\n', changed_sites, sep='')
     # print('\nunchanged_sites\n', unchanged_sites, sep='')
