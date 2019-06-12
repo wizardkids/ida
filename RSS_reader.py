@@ -28,9 +28,15 @@ Features:
 √-- list feeds by group/title
 -- save a feed to OneNote
 
+How to find RSS address for a website:
+https://www.lifewire.com/what-is-an-rss-feed-4684568
+
+How to use python to get RSS address from a website:
+http://bluegalaxy.info/codewalk/2017/09/21/python-using-requests-to-get-web-page-source-text/
 """
 
 
+import hashlib
 import json
 import os
 import re
@@ -53,11 +59,11 @@ def get_feed_info(rss):
     try:
         newsfeed = feedparser.parse(rss)
         # entries is the only dict in [newsfeed_keys]
-        newsfeed_keys = ['feed', 'entries', 'bozo', 'headers', 'updated',
-                         'updated_parsed', 'href', 'status', 'encoding', 'version', 'namespaces']
+        newsfeed_keys = ['feed', 'entries', 'bozo', 'headers', 'updated','updated_parsed', 'href', 'status', 'encoding', 'version', 'namespaces']
 
-        entries_keys = ['title', 'title_detail', 'links', 'link', 'comments', 'published', 'published_parsed', 'authors', 'author',
-                        'author_detail', 'tags', 'id', 'guidislink', 'summary', 'summary_detail', 'content', 'wfw_commentrss', 'slash_comments', 'media_content']
+        feed_keys = ['title', 'title_detail', 'links', 'link', 'subtitle', 'subtitle_detail', 'updated', 'updated_parsed', 'language', 'sy_updateperiod', 'sy_updatefrequency', 'generator_detail', 'generator', 'cloud', 'image']
+
+        entries_keys = ['title', 'title_detail', 'links', 'link', 'comments', 'published', 'published_parsed', 'authors', 'author','author_detail', 'tags', 'id', 'guidislink', 'summary', 'summary_detail', 'content', 'wfw_commentrss', 'slash_comments', 'media_content']
 
         # print site information
         print('\nSite title:', newsfeed['feed']['title'])
@@ -77,6 +83,10 @@ def get_feed_info(rss):
         print('\nPage title:', newsfeed['entries'][0]['title'])
         print('\nPage id:', newsfeed['entries'][0]['id'])
         print('\nPage published:', newsfeed['entries'][0]['published'])
+        # print('\nPage content:', newsfeed['entries'][0]['content'][0]['value'])
+
+        # print('nPage content type:', type(newsfeed['entries'][0]['content'][0]['value']))
+
 
         # get the content for first item in [entries]
         c = newsfeed['entries'][0]['content'][0]['value']
@@ -205,7 +215,7 @@ def import_OPML():
     return err
 
 
-def retrieve_myFeeds():
+def load_myFeeds_dict():
     """
     Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Each feed in 'value' contains two elements: title and RSS address.
     """
@@ -266,7 +276,7 @@ def get_feed_status(rss, myFeeds):
     else:
         feed_update = feedparser.parse(rss)
 
-    return feed_update.status, myFeeds, updated_feeds
+    return feed_update.status, myFeeds
 
 
 def find_all_changes(myFeeds):
@@ -368,7 +378,7 @@ def pick_website():
     """
     From a list of feeds, pick one and return the feed's RSS address.
     """
-    myFeeds = retrieve_myFeeds()
+    myFeeds = load_myFeeds_dict()
 
     cnt, the_titles = 0, []
     for k, v in myFeeds.items():
@@ -446,6 +456,13 @@ def get_revision_number():
           'the date that the first version of "ida" was launched.\n\n', sep='')
     return None
 
+def hash_a_title(s):
+    """
+    Create a hash value for a string (s).
+    """
+    return int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16) % 10**8
+    
+
 
 if __name__ == '__main__':
 
@@ -453,7 +470,16 @@ if __name__ == '__main__':
     version_num = '0.1 rev1'
     print('ida ' + version_num[0:3] + ' - a small news feed reader')
 
-    # print_all_functions()
+    # read titles_read.txt
+    try:
+        with open('titles_read.txt', 'r') as file:
+            all_titles = file.readlines()
+        hash_titles = [line.strip('\n') for line in all_titles]
+    except FileNotFoundError:
+        hash_titles = []
+
+
+
 
     # -- about this project
     # about()
@@ -466,10 +492,10 @@ if __name__ == '__main__':
         - values: list of RSS feeds for each group:
             _ feed.title, RSS, HTML, feed.etag, feed.modified, feed.updated_parsed
         -- import_OPML()
-        -- functions that allow editing of myFeeds.json
+        -- functions that allow creating and editing of myFeeds.json
 
-    get {myFeeds} from json to dictionary
-        --retrieve_myFeeds()
+    get {myFeeds} from myFeeds.json
+        --load_myFeeds_dict()
 
     for each group in {myFeeds}
         for each feed site:
@@ -481,12 +507,29 @@ if __name__ == '__main__':
                 -- get_feed_status()
             - update feed.eTag, feed.modified, or feed.updated.parsed in {myFeeds}
                 -- get_feed_status()
+    from [updated_feeds]:
+        - print a list: 
+            Feed_Title
+                1. Article_title1 (feed['entries'][0]['title'])
+                2. Article_title2 (feed['entries'][1]['title'])
+                3. Article_title3 (feed['entries'][2]['title'])
+                4. Article_title4 (feed['entries'][3]['title'])
+        - for each title, before displaying, hash the title and then check in [hash_title]. If it already exists, then don't list the title since you've already read it
+                -- hash_a_title(title)
 
+    from the list, choose a number
 
-    user chooses a feed from [updated_feeds]
-        -- 
-        AND/OR display feed in browser
-        -- 
+    for the number chosen:
+        (1) get RSS address: feed['entries'][i]['link'] from [updated_feeds]
+            (a) display in browser 
+                -- show_lastest_rss(rss)
+            (b) display a page summary (feed['entries][i]['summary'])
+        (2) create a hash of the title and store in [hash_titles]
+                -- hash_a_title(title)
+
+    before quitting the app, write [hash_titles] to file
+    when restarting, reload [hash_titles] from file
+ 
 
     """
 
@@ -497,15 +540,15 @@ if __name__ == '__main__':
     # err = import_OPML()
 
     # -- retrieve all feeds from myFeeds.json and return {myFeeds} as a dict
-    # myFeeds = retrieve_myFeeds()
+    myFeeds = load_myFeeds_dict()
 
     # -- get last ten RSS feeds from a single site, returned as a list
     # last_ten_titles = last_ten('https://hebendsdown.wordpress.com/feed/')
 
     # -- check to see if feed has changed; return status code
     #  -- status is 304 if no change
-    # status = get_feed_status('https://hebendsdown.wordpress.com/feed/')
-    # print(status)
+    status, myFeeds = get_feed_status('https://hebendsdown.wordpress.com/feed/', myFeeds)
+    print(status)
 
     # -- pick one website from the list and return the URL (not RSS)
     # url = pick_website()
@@ -529,3 +572,11 @@ if __name__ == '__main__':
     # print('\nsite_410\n', site_410, sep='')
     # print('\nsite_200\n', site_200, sep='')
     # print('\nother_sites\n', other_sites, sep='')
+
+
+
+
+    # before quitting the app, save hash_titles:
+    with open('titles_read.txt', 'w') as file:
+        for i in hash_titles:
+            file.write(i + '\n')
