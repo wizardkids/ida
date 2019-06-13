@@ -456,11 +456,12 @@ def get_revision_number():
           'the date that the first version of "ida" was launched.\n\n', sep='')
     return None
 
-def hash_a_title(s):
+
+def hash_a_string(this_string):
     """
-    Create a hash value for a string (s).
+    Create a hash value for a string (this_string).
     """
-    return int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16) % 10**8
+    return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
     
 
 
@@ -480,52 +481,73 @@ if __name__ == '__main__':
 
 
 
-
     # -- about this project
     # about()
 
     """
-    BASIC STRATEGY:
+    FUNCTIONS NEEDED:
+        create myFeeds.json where:
+            - keys: feed groups
+            - values: [list] of RSS feeds for each group:
+                - feed.title, RSS, HTML, feed.etag, feed.modified, feed.updated_parsed
+            - should contain a blank group for feeds that don't belong to a group
+            -- import_OPML()
 
-    create myFeeds.json where:
-        - keys: feed groupings
-        - values: list of RSS feeds for each group:
-            _ feed.title, RSS, HTML, feed.etag, feed.modified, feed.updated_parsed
-        -- import_OPML()
-        -- functions that allow creating and editing of myFeeds.json
+        need functions that allow creating and editing of myFeeds.json
+            1. get a HTML address
+            2. fxn to read feed source content and use regex to get RSS address
+            3. fields:
+            ['Ignatian Spirituality', 'http://feeds.feedburner.com/dotMagis?format=xml', 'https://www.ignatianspirituality.com', '6c132-941-ad7e3080', 'Fri, 11 Jun 2012 23:00:34 GMT', 'time.struct_time(tm_year=2012, tm_mon=3, tm_mday=6, tm_hour=23, tm_min=00, tm_sec=34, tm_wday=6, tm_yday=66, tm_isdst=0)', hash the title for ['entries'][0]['title']]
 
-    get {myFeeds} from myFeeds.json
-        --load_myFeeds_dict()
+            [Site title, RSS address, HTML address, eTag, modified, updated_parsed, hashed-title for top entry]
 
-    for each group in {myFeeds}
-        for each feed site:
-            - access site using RSS
-                -- get_feed_status()
-            - compare current feed.eTag and/or feed.modified or feed.updated_parsed with the same values stored in {myFeeds}
-                -- get_feed_status()
-            - if different, store this feed (RSS) in [updated_feeds]
-                -- get_feed_status()
-            - update feed.eTag, feed.modified, or feed.updated.parsed in {myFeeds}
-                -- get_feed_status()
-    from [updated_feeds]:
-        - print a list: 
-            Feed_Title
-                1. Article_title1 (feed['entries'][0]['title'])
-                2. Article_title2 (feed['entries'][1]['title'])
-                3. Article_title3 (feed['entries'][2]['title'])
-                4. Article_title4 (feed['entries'][3]['title'])
-        - for each title, before displaying, hash the title and then check in [hash_title]. If it already exists, then don't list the title since you've already read it
-                -- hash_a_title(title)
+            4. put the new feed into an existing group, where the default is the blank group 
+            5. fxn to add a new group
+            6. fxn to edit or delete an existing group
+            7. fxn to move a feed from one group to another
 
-    from the list, choose a number
 
-    for the number chosen:
-        (1) get RSS address: feed['entries'][i]['link'] from [updated_feeds]
-            (a) display in browser 
-                -- show_lastest_rss(rss)
-            (b) display a page summary (feed['entries][i]['summary'])
-        (2) create a hash of the title and store in [hash_titles]
-                -- hash_a_title(title)
+    WHEN THE APP STARTS:
+
+        1. get {myFeeds} from myFeeds.json
+            -- {myFeeds} = load_myFeeds_dict()
+
+        2. access every RSS feed
+            -- status, myFeeds, updated_feeds = get_feed_status(site, myFeeds)
+            for each group in {myFeeds}
+                for each feed site:
+                    - access site using RSS
+                    - determine if feed has changed:
+                        -compare current feed.eTag and/or feed.modified or feed.updated_parsed with the same values stored in {myFeeds}
+                        - hash the title for ['entries'][0] (the most recent page) and see if that hash exists in [hash_titles]; if not, then site has changed
+                    - if site has changed (updated):
+                        - store this feed (RSS) in [updated_feeds]
+                        - update feed.eTag, feed.modified, feed.updated.parsed, and hash the title for ['entries'][0]['title'] in {myFeeds}
+
+        3. from [updated_feeds]:
+            - for each title, hash the title and then check in [hash_title]. If it already exists, then don't list the title since you've already read it
+            - print a list: 
+                Feed_Title
+                    1. Article_title1 (feed['entries'][0]['title'])
+                    2. Article_title2 (feed['entries'][1]['title'])
+                    3. Article_title3 (feed['entries'][2]['title'])
+                    4. Article_title4 (feed['entries'][3]['title'])
+
+        4. from the list, choose a number
+
+        5. for the number chosen:
+            (a) get RSS address: feed['entries'][i]['link'] from [updated_feeds]
+                (a) display in browser 
+                    -- show_lastest_rss(rss)
+
+                ...OR...
+
+                (b) display a page summary (feed['entries][i]['summary'])
+
+            (b) create a hash of the title and store in [hash_titles]
+                    -- hash = hash_a_string(this_string)
+
+        6. after selecting a number and choosing (a) or (b) from step #5, loop back to step (3)
 
     before quitting the app, write [hash_titles] to file
     when restarting, reload [hash_titles] from file
@@ -542,13 +564,14 @@ if __name__ == '__main__':
     # -- retrieve all feeds from myFeeds.json and return {myFeeds} as a dict
     myFeeds = load_myFeeds_dict()
 
+
     # -- get last ten RSS feeds from a single site, returned as a list
     # last_ten_titles = last_ten('https://hebendsdown.wordpress.com/feed/')
 
     # -- check to see if feed has changed; return status code
     #  -- status is 304 if no change
-    status, myFeeds = get_feed_status('https://hebendsdown.wordpress.com/feed/', myFeeds)
-    print(status)
+    # status, myFeeds = get_feed_status('https://hebendsdown.wordpress.com/feed/', myFeeds)
+    # print(status)
 
     # -- pick one website from the list and return the URL (not RSS)
     # url = pick_website()
@@ -574,9 +597,8 @@ if __name__ == '__main__':
     # print('\nother_sites\n', other_sites, sep='')
 
 
-
-
     # before quitting the app, save hash_titles:
+    hash_titles_set = set(hash_titles)
     with open('titles_read.txt', 'w') as file:
-        for i in hash_titles:
+        for i in hash_titles_set:
             file.write(i + '\n')
