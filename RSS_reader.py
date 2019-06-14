@@ -83,13 +83,15 @@ def get_feed_info(rss):
         print('\nPage title:', newsfeed['entries'][0]['title'])
         print('\nPage id:', newsfeed['entries'][0]['id'])
         print('\nPage published:', newsfeed['entries'][0]['published'])
-        # print('\nPage content:', newsfeed['entries'][0]['content'][0]['value'])
-
-        # print('nPage content type:', type(newsfeed['entries'][0]['content'][0]['value']))
-
+        try:
+            print('\nPage content:', newsfeed['entries'][0]['content']['value'])
+            print('\nPage content type:', type(newsfeed['entries'][0]['content']['value']))
+        except:
+            print('\nPage summary:', newsfeed['entries'][0]['summary'])
+            print('\nPage summary type:', type(newsfeed['entries'][0]['summary']))
 
         # get the content for first item in [entries]
-        c = newsfeed['entries'][0]['content'][0]['value']
+        # c = newsfeed['entries'][0]['content']
         # print(c)
     except IndexError:
         pass
@@ -283,7 +285,7 @@ def find_all_changes(myFeeds):
     """
     Go through the RSS feeds in {myFeeds} and return a list of feeds that have changed since last access. Also return list of unreachable sites.
     """
-    rss_list, changed_sites, unchanged_sites = [], [], []
+    rss_list, updated_sites, unchanged_sites = [], [], []
     other_sites, bad_sites = [], []
     site_200, site_301, site_302, site_303 = [], [], [], []
     site_403, site_410 = [], []
@@ -318,9 +320,9 @@ def find_all_changes(myFeeds):
         #     other_sites.append((status, site))
 
         if status != 304:
-            changed_sites.append(site)
+            updated_sites.append(site)
 
-    return changed_sites, bad_sites
+    return updated_sites, bad_sites
 
 
 def get_url_status(url):
@@ -462,16 +464,84 @@ def hash_a_string(this_string):
     Create a hash value for a string (this_string).
     """
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
-    
 
+
+def main_menu():
+    """
+    Print the main menu on the screen and direct the user's choice.
+    """
+    menu = (
+        '<c>heck feeds  ', '<e>dit feed    ', '<a>bout ',
+        '<i>mport OPML  ', 'e<x>port feeds ', '<q>uit',
+    )
+
+    while True:
+        print()
+        for i in range(0, len(menu), 3):
+            m = ''.join(menu[i:i+3])
+            print(m)
+        print()
+        menu_choice = input('Choice: ')
+
+        if menu_choice.upper() == 'Q':
+            return
+        elif menu_choice.upper() ==  'A':
+            about()
+        elif menu_choice.upper() ==  'C':
+            pass
+        elif menu_choice.upper() ==  'E':
+            pass
+        elif menu_choice.upper() ==  'I':
+            pass
+        elif menu_choice.upper() ==  'X':
+            pass
+        else:
+            print('*'*35)
+            print('Enter a valid menu choice.')
+            print('*'*35)
+            continue
+
+
+def main(hash_titles):
+    """
+    The main program that organizes how the program works.
+    """
+
+    # load {myFeeds} from myFeeds.json file
+    myFeeds = load_myFeeds_dict()
+
+    """
+
+    {'Emergent blogs': [['Ignatian Spirituality', 'http://feeds.feedburner.com/dotMagis?format=xml', 'https://www.ignatianspirituality.com', '6c132-941-ad7e3080', 'Fri, 11
+                         Jun 2012 23:00:34 GMT', 'time.struct_time(tm_year=2012, tm_mon=3, tm_mday=6, tm_hour=23, tm_min=00, tm_sec=34, tm_wday=6, tm_yday=66, tm_isdst=0)'],
+    """
+
+    # # -- print various attributes of a single RSS feed
+    # rss = myFeeds['Emergent blogs'][1][1]
+    # newsfeed = feedparser.parse(rss)
+    # for k, v in newsfeed['entries'][0].items():
+    #     print(k, v)
+    #     print()
+    # exit()
+    # get_feed_info(rss)
+
+    # display menu on screen
+    menu_choice = main_menu()
+
+
+    # check all feeds for changes
+    # changed_sites, bad_sites = find_all_changes(myFeeds)
+
+
+    return
 
 if __name__ == '__main__':
 
     # get_revision_number()
-    version_num = '0.1 rev1'
+    version_num = '0.1 rev4'
     print('ida ' + version_num[0:3] + ' - a small news feed reader')
 
-    # read titles_read.txt
+    # read titles_read.txt from disk
     try:
         with open('titles_read.txt', 'r') as file:
             all_titles = file.readlines()
@@ -479,10 +549,7 @@ if __name__ == '__main__':
     except FileNotFoundError:
         hash_titles = []
 
-
-
-    # -- about this project
-    # about()
+    main(hash_titles)
 
     """
     FUNCTIONS NEEDED:
@@ -491,7 +558,8 @@ if __name__ == '__main__':
             - values: [list] of RSS feeds for each group:
                 - feed.title, RSS, HTML, feed.etag, feed.modified, feed.updated_parsed
             - should contain a blank group for feeds that don't belong to a group
-            -- import_OPML()
+            -- import_OPML() 
+                can create this file from an OPML file
 
         need functions that allow creating and editing of myFeeds.json
             1. get a HTML address
@@ -505,6 +573,12 @@ if __name__ == '__main__':
             5. fxn to add a new group
             6. fxn to edit or delete an existing group
             7. fxn to move a feed from one group to another
+
+        create a menu:
+            - import/export
+            - add/edit/delete RSS feeds and groups
+            - check all feeds for changes and display changed feeds
+
 
 
     WHEN THE APP STARTS:
@@ -525,13 +599,14 @@ if __name__ == '__main__':
                         - update feed.eTag, feed.modified, feed.updated.parsed, and hash the title for ['entries'][0]['title'] in {myFeeds}
 
         3. from [updated_feeds]:
-            - for each title, hash the title and then check in [hash_title]. If it already exists, then don't list the title since you've already read it
-            - print a list: 
+            - for each title, hash the title and then check in [hash_titles]. If it already exists, then don't list the title since you've already read it
+            - print a list of feed['entries'][0]['content'][0]['value']: 
                 Feed_Title
                     1. Article_title1 (feed['entries'][0]['title'])
                     2. Article_title2 (feed['entries'][1]['title'])
                     3. Article_title3 (feed['entries'][2]['title'])
                     4. Article_title4 (feed['entries'][3]['title'])
+                    5. ...
 
         4. from the list, choose a number
 
@@ -549,6 +624,8 @@ if __name__ == '__main__':
 
         6. after selecting a number and choosing (a) or (b) from step #5, loop back to step (3)
 
+
+
     before quitting the app, write [hash_titles] to file
     when restarting, reload [hash_titles] from file
  
@@ -562,7 +639,7 @@ if __name__ == '__main__':
     # err = import_OPML()
 
     # -- retrieve all feeds from myFeeds.json and return {myFeeds} as a dict
-    myFeeds = load_myFeeds_dict()
+    # myFeeds = load_myFeeds_dict()
 
 
     # -- get last ten RSS feeds from a single site, returned as a list
