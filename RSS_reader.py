@@ -179,6 +179,12 @@ def import_OPML():
                 m_Feed_Title = re.search(rem_title, line)
                 m_RSS = re.search(rem_RSS, line)
                 m_HTML = re.search(rem_HTML, line)
+                if m_HTML:
+                    this_URL = m_HTML.group('URL')[:-1]  # deletes the final "
+                    # check to see if this is a valid URL
+                    status_code = get_url_status(this_URL)
+                    if status_code != 200:
+                        continue
                 if m_Feed_Group:
                     this_group = m_Feed_Group.group("Feed_Group")
                     myFeeds.update({this_group: []})
@@ -186,8 +192,6 @@ def import_OPML():
                     this_title = m_Feed_Title.group("Feed_Title")
                 if m_RSS:
                     this_RSS = m_RSS.group('RSS')
-                if m_HTML:
-                    this_URL = m_HTML.group('URL')[:-1]  # deletes the final "
                 if m_Feed_Title and m_RSS and m_HTML:
                     # add placeholder feed.eTag, feed.modified, feed.updated_parsed, and feed.last_title
                     new_feed = (this_title,
@@ -249,14 +253,14 @@ def get_feed_status(rss, myFeeds):
     """
     # -- https://pythonhosted.org/feedparser/http-etag.html
 
-    # todo -- update eTag, modified, or updated_parsed in {myFeeds}, changed or not
     # ? The basic concept is that a feed publisher may provide a special HTTP header, called an eTag, when it publishes a feed. You should send this eTag back to the server on subsequent requests. If the feed has not changed since the last time you requested it, the server will return a special HTTP status code (304) and no feed data.
     # ? see: https://fishbowl.pastiche.org/2002/10/21/http_conditional_get_for_rss_hackers
-    # todo -- if the feed has changed, add the site info from {myFeeds} to a temporary list called [updated_feeds]
-    # todo -- create a new function to create updated_feeds and to modify {myFeeds} with new eTag, modified, and updated_parsed
 
     # first request
     feed = feedparser.parse(rss[1])
+
+    last_title = feed['entries'][0]['title']
+    hashed_title = hash_a_string(last_title)
 
     # store the etag, modified, updated_parsed; any or all may not exist!
     try:
@@ -297,6 +301,7 @@ def get_feed_status(rss, myFeeds):
                 i[3] = last_etag
                 i[4] = last_modified
                 i[5] = last_updated
+                i[6] = hashed_title
             # for n in range(len(i)):
             #     print(' '*5, ndx+1, ': ', i[n], sep='')
 
@@ -367,9 +372,14 @@ def get_url_status(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     # download the url
-    r = requests.get(url, headers=headers)
+    try:
+        r = requests.get(url, headers=headers)
+        status_code = r.status_code
+    except:
+        print('Cannot connect to', url)
+        status_code = 404
 
-    return r.status_code
+    return status_code
 
 
 # ? def show_HTML_string(HTML_string):
