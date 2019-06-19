@@ -189,10 +189,11 @@ def import_OPML():
                 if m_HTML:
                     this_URL = m_HTML.group('URL')[:-1]  # deletes the final "
                 if m_Feed_Title and m_RSS and m_HTML:
-                    # add placeholder feed.eTag, feed.modified, feed.updated_parsed
+                    # add placeholder feed.eTag, feed.modified, feed.updated_parsed, and feed.last_title
                     new_feed = (this_title,
                                 this_RSS,
                                 this_URL,
+                                '',
                                 '',
                                 '',
                                 '')
@@ -204,13 +205,13 @@ def import_OPML():
             print('Aborted.')
             return
 
-    # for k, v in myFeeds.items():
-    #     print('\n', k, sep='')
-    #     for ndx, i in enumerate(v):
-    #         print(' '*5, ndx+1, ': ', i[0], sep='')
+    for k, v in myFeeds.items():
+        print('\n', k, sep='')
+        for ndx, i in enumerate(v):
+            print(' '*5, ndx+1, ': ', i, sep='')
 
     # with confirmation, write {myFeeds} to myFeeds.json
-    r = input('Overwrite "myFeeds.txt"? (YES/ABORT) ')
+    r = input('Overwrite "myFeeds.json"? (YES/ABORT) ')
     if r.upper() == 'YES':
         with open('myFeeds.json', 'w+') as file:
             file.write(json.dumps(myFeeds, ensure_ascii=False))
@@ -219,7 +220,7 @@ def import_OPML():
         print('Aborted.')
         err = True
 
-    return err
+    return err, myFeeds
 
 
 def load_myFeeds_dict():
@@ -290,14 +291,14 @@ def get_feed_status(rss, myFeeds):
 
     # update {myFeeds} with last_etag, last_modified, and last_updated
     for k, v in myFeeds.items():
-        print('\n', k, sep='')
+        # print('\n', k, sep='')
         for ndx, i in enumerate(v):
             if i[0] == rss[0]:
                 i[3] = last_etag
                 i[4] = last_modified
                 i[5] = last_updated
-            for n in range(len(i)):
-                print(' '*5, ndx+1, ': ', i[n], sep='')
+            # for n in range(len(i)):
+            #     print(' '*5, ndx+1, ': ', i[n], sep='')
 
     return status, myFeeds
 
@@ -355,7 +356,7 @@ def find_all_changes(myFeeds):
     # print('\nsite_200\n', site_200, sep='')
     # print('\nother_sites\n', other_sites, sep='')
 
-    return updated_sites, bad_sites
+    return updated_sites, bad_sites, myFeeds
 
 
 def get_url_status(url):
@@ -517,16 +518,16 @@ def main_menu(myFeeds):
         menu_choice = input('Choice: ')
 
         if menu_choice.upper() == 'Q':
-            return
+            return myFeeds
         elif menu_choice.upper() == 'A':
             about()
         elif menu_choice.upper() == 'C':
-            changed_sites, bad_sites = find_all_changes(myFeeds)
+            changed_sites, bad_sites, myFeeds = find_all_changes(myFeeds)
             print(changed_sites)
         elif menu_choice.upper() == 'E':
             pass
         elif menu_choice.upper() == 'I':
-            err = import_OPML()
+            err, myFeeds = import_OPML()
             if err:
                 print('Import failed or aborted.')
             else:
@@ -539,6 +540,8 @@ def main_menu(myFeeds):
             print('*'*35)
             continue
 
+    return myFeeds
+
 
 def main(hash_titles):
     """
@@ -549,13 +552,29 @@ def main(hash_titles):
     myFeeds = load_myFeeds_dict()
 
     # display menu on screen
-    menu_choice = main_menu(myFeeds)
+    myFeeds = main_menu(myFeeds)
 
-    # before quitting the app, save hash_titles:
+    #  the following <for> loop can be used to tell you what feeds provide
+    #  no eTag, last modified, or last update data
+    for k, v in myFeeds.items():
+        print('\n', k, sep='')
+        for ndx, i in enumerate(v):
+            # print(' '*5, ndx+1, ': ', i[0], sep='')
+            # print(' '*5, ndx+1, ': ', i[0], '\n', ' '*10, i[1], sep='')
+            if not i[3] and not i[4] and not i[5]:
+                print(' '*5, ndx+1, ': ', i, sep='')
+
+    # before quitting the app
+    # (1) save hash_titles
+    # (2) save {myFeeds}
+
     hash_titles_set = set(hash_titles)
     with open('titles_read.txt', 'w') as file:
         for i in hash_titles_set:
             file.write(i + '\n')
+
+    with open('myFeeds.json', 'w+') as file:
+        file.write(json.dumps(myFeeds, ensure_ascii=False))
 
     return
 
