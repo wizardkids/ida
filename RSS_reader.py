@@ -136,15 +136,16 @@ def print_all_functions():
     return
 
 
-def import_OPML():
+def import_OPML(myFeeds):
     """
     Parse an OPML file and put group names, feed titles, and feed addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2], placeholder feed.eTag, feed.modified, feed.updated_parsed], [...]], ... }. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
 
     Output: {myFeeds} is written to myFeeds.json.
     """
+    file = input('Name of OPML file to import: ')
+    # file = 'feedly.opml'
+
     while True:
-        # file = input('Name of OPML file to import: ')
-        file = 'feedly.opml'
         if file:
             try:
                 with open(file, 'r') as f:
@@ -207,7 +208,7 @@ def import_OPML():
             break
         else:
             print('Aborted.')
-            return
+            return True, myFeeds
 
     for k, v in myFeeds.items():
         print('\n', k, sep='')
@@ -371,7 +372,7 @@ def get_url_status(url):
     # set the headers like we are a browser
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    # download the url
+    # download the url and get its status, if any
     try:
         r = requests.get(url, headers=headers)
         status_code = r.status_code
@@ -537,7 +538,7 @@ def main_menu(myFeeds):
         elif menu_choice.upper() == 'E':
             pass
         elif menu_choice.upper() == 'I':
-            err, myFeeds = import_OPML()
+            err, myFeeds = import_OPML(myFeeds)
             if err:
                 print('Import failed or aborted.')
             else:
@@ -564,15 +565,14 @@ def main(hash_titles):
     # display menu on screen
     myFeeds = main_menu(myFeeds)
 
-    #  the following <for> loop can be used to tell you what feeds provide
-    #  no eTag, last modified, or last update data
+    # the following <for> loop can be used to tell you what feeds provide no eTag, last modified, or last update data
     for k, v in myFeeds.items():
         print('\n', k, sep='')
         for ndx, i in enumerate(v):
-            # print(' '*5, ndx+1, ': ', i[0], sep='')
+            print(' '*5, ndx+1, ': ', i[0], sep='')
             # print(' '*5, ndx+1, ': ', i[0], '\n', ' '*10, i[1], sep='')
-            if not i[3] and not i[4] and not i[5]:
-                print(' '*5, ndx+1, ': ', i, sep='')
+            # if not i[3] and not i[4] and not i[5]:
+            #     print(' '*5, ndx+1, ': ', i, sep='')
 
     # before quitting the app
     # (1) save hash_titles
