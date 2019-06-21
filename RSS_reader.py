@@ -8,25 +8,24 @@ Program Description:
     A small, lightweight, RSS feed reader.
 
 Features:
--- Add, edit, delete URLs
--- convert URL to RSS
--- name the feed with your own name
--- keep track of how frequently the feed is updated
--- keep track of last time the feed was updated
--- notify if a feed is unreachable
-√-- display each RSS site and a list of its titles
--- order the titles from newest to oldest
-√-- load a title in a browser
--- provide a mechanism for selecting a particular title to read
--- mark a read title as "read"
--- manually mark a feed title as read or unread
--- automatically update all feeds when app starts update
--- background mode updates feed in the background
-√-- group feeds so they are easier to find
-√-- import OPML
--- export
-√-- list feeds by group/title
--- save a feed to OneNote
+    -- Add, edit, delete URLs
+    -- convert URL to RSS
+    -- name the feed with your own name
+    -- keep track of how frequently the feed is updated
+    -- keep track of last time the feed was updated
+    -- notify if a feed is unreachable
+    -- display each RSS site and a list of its titles
+    -- order the titles from newest to oldest
+    -- load a title in a browser
+    -- provide a mechanism for selecting a particular title to read
+    -- mark a read title as "read"
+    -- manually mark a feed title as read or unread
+    -- automatically update all feeds when app starts update
+    -- background mode updates feed in the background
+    -- group feeds so they are easier to find
+    -- import OPML
+    -- export to...???
+    -- list feeds by group/title
 
 How to find RSS address for a website:
 https://www.lifewire.com/what-is-an-rss-feed-4684568
@@ -50,7 +49,26 @@ import feedparser
 import requests
 import urlwatch
 
-# todo -- figure out how to speed up get_feed_status(). What is the best way of determining if a feed post has been read? Is ETag, modified, etc. required? They may not be for many blogs, but what about Nature?
+# ! still not happy with speed of get_feed_status(). It may be limited by the speed of the feedparser module
+
+# todo -- add a default blank group to {myFeeds}, in case user adds a feed, but chooses no group
+
+# todo -- add a utility that allows user to manually enter a new feed
+    # -- enter URL of feed and optionally a group (new or existing)
+    # -- go to the URL, get the RSS feed address
+    # -- fill in the following fields in {myFeeds}
+        # -- 0: feed title
+        # -- 1: feed RSS
+        # -- 2: feed URL
+        # -- 3: feed.ETag (blank)
+        # -- 4: feed.modified (blank)
+        # -- 5: feed.updated (blank)
+        # -- 6: hash of last entry posted on website (blank)
+        # -- 7: link to last entry posted on website (blank)
+
+# todo -- need a utility that allows a feed to change groups
+# todo -- need a utility that allows deletion of a feed
+# todo -- add utility that reports on unreachable sites [bad_sites]
 # todo -- add ability to UNREAD a post
 
 
@@ -255,7 +273,7 @@ def load_myFeeds_dict():
 
 def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
     """
-    Access a feed and return its status code.
+    Access a feed. Compare the title of the most recent post to the title stored in {myFeeds}. If they are the same, then the feed has not been updated. If they are different, then add the feed info to [updated_feeds].
 
     arg rss_feed contains:
         feed title
@@ -267,10 +285,10 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
 
     # if status is other than 304, then add this title to [updated_feeds]
     # -- [rss_feed] structure to be added to [updated_feeds]:
-        # -- fed title
-        # -- RSS address
-        # -- the most recent post link
-        # -- n items containing lists of [post-title, post-link]
+    # -- fed title
+    # -- RSS address
+    # -- the most recent post link
+    # -- n items containing lists of [post-title, post-link]
 
     # get last article title and link that was read
     for k, v in myFeeds.items():
@@ -341,10 +359,10 @@ def find_all_changes(myFeeds):
             rss_feed, myFeeds, updated_feeds, bad_feeds)
 
         # for each rss_feed, [uptdate_feeds] returned by get_feed_status():
-            # -- feed title
-            # -- RSS address
-            # -- the most recent post link
-            # -- n items containing lists of [post-title, post-link]
+        # -- feed title
+        # -- RSS address
+        # -- the most recent post link
+        # -- n items containing lists of [post-title, post-link]
 
         # if status == 200:               # 200 OK
         #     site_200.append(site)
@@ -399,9 +417,9 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read):
             try:
                 choice = int(choice)
                 if choice < 1 or choice > len(updated_feeds):
-                     print('Enter an integer between 1 and ',
-                           len(updated_feeds),  sep='')
-                     continue
+                    print('Enter an integer between 1 and ',
+                          len(updated_feeds),  sep='')
+                    continue
                 else:
                     break
             except ValueError:
@@ -474,7 +492,7 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read):
 
 def get_url_status(url):
     """
-    Get the status code for a URL.
+    Get the status code for a URL. This function is used during import of an OPML file to be sure each feed is accessible.
     """
     # set the headers like we are a browser
     headers = {
@@ -499,7 +517,7 @@ def show_lastest_rss(rss):
     except TypeError:
         pass
     return
-    
+
 
 def fold(txt):
     """
@@ -544,7 +562,7 @@ def get_revision_number():
 
 def hash_a_string(this_string):
     """
-    Create a hash value for a string (this_string).
+    Create a hash value for a string (this_string). This utility is used to hash titles to speed up comparison of titles and reduce list storage space.
     """
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
@@ -576,7 +594,6 @@ def main_menu(myFeeds, titles_read):
             # [('Ignatian Spirituality', 'http://feeds.feedburner.com/dotMagis?format=xml'), ...]
             myFeeds, updated_feeds, titles_read = list_updated_feeds(
                 myFeeds, updated_feeds, titles_read)
-
 
         elif menu_choice.upper() == 'E':
             pass
@@ -644,86 +661,7 @@ if __name__ == '__main__':
 
     main()
 
-    """
-    FUNCTIONS NEEDED:
-        create myFeeds.json where:
-            - keys: feed groups
-            - values: [list] of RSS feeds for each group:
-                - feed.title, RSS, HTML, feed.ETag, feed.modified, feed.updated
-            - should contain a blank group for feeds that don't belong to a group
-            -- import_OPML() 
-                can create this file from an OPML file
-
-        need functions that allow creating and editing of myFeeds.json
-            1. get a HTML address
-            2. fxn to read feed source content and use regex to get RSS address
-            3. fields:
-            ['Ignatian Spirituality', 'http://feeds.feedburner.com/dotMagis?format=xml', 'https://www.ignatianspirituality.com', '6c132-941-ad7e3080', 'Fri, 11 Jun 2012 23:00:34 GMT', 'time.struct_time(tm_year=2012, tm_mon=3, tm_mday=6, tm_hour=23, tm_min=00, tm_sec=34, tm_wday=6, tm_yday=66, tm_isdst=0)', hash the title for ['entries'][0]['title']]
-
-            [Site title, RSS address, HTML address, ETag, modified, updated, hashed-title for top entry]
-
-            4. put the new feed into an existing group, where the default is the blank group 
-            5. fxn to add a new group
-            6. fxn to edit or delete an existing group
-            7. fxn to move a feed from one group to another
-
-        create a menu:
-            - import/export
-            - add/edit/delete RSS feeds and groups
-            - check all feeds for changes and display changed feeds
-
-
-
-    WHEN THE APP STARTS:
-
-        1. get {myFeeds} from myFeeds.json
-            -- {myFeeds} = load_myFeeds_dict()
-
-        2. access every RSS feed
-            -- status, myFeeds, updated_feeds = get_feed_status(site, myFeeds)
-            for each group in {myFeeds}
-                for each feed site:
-                    - access site using RSS
-                    - determine if feed has changed:
-                        -compare current feed.ETag and/or feed.modified or feed.updated with the same values stored in {myFeeds}
-                        - hash the title for ['entries'][0] (the most recent page) and see if that hash exists in [titles_read]; if not, then site has changed
-                    - if site has changed (updated):
-                        - store this feed (RSS) in [updated_feeds]
-                        - update feed.ETag, feed.modified, feed.updated.parsed, and hash the title for ['entries'][0]['title'] in {myFeeds}
-
-        3. from [updated_feeds]:
-            - for each title, hash the title and then check in [titles_read]. If it already exists, then don't list the title since you've already read it
-            - print a list of feed['entries'][0]['content'][0]['value']: 
-                Feed_Title
-                    1. Article_title1 (feed['entries'][0]['title'])
-                    2. Article_title2 (feed['entries'][1]['title'])
-                    3. Article_title3 (feed['entries'][2]['title'])
-                    4. Article_title4 (feed['entries'][3]['title'])
-                    5. ...
-
-        4. from the list, choose a number
-
-        5. for the number chosen:
-            (a) get RSS address: feed['entries'][i]['link'] from [updated_feeds]
-                (a) display in browser 
-                    -- show_lastest_rss(rss)
-
-                ...OR...
-
-                (b) display a page summary (feed['entries][i]['summary'])
-
-            (b) create a hash of the title and store in [titles_read]
-                    -- hash = hash_a_string(this_string)
-
-        6. after selecting a number and choosing (a) or (b) from step #5, loop back to step (3)
-
-
-
-    before quitting the app, write [titles_read] to file
-    when restarting, reload [titles_read] from file
- 
-
-    """
+    # ============ UTILITY FUNCTIONS FOR TESTING PURPOSES ============
 
     # -- print various attributes of a single RSS feed
     # get_feed_info('https://hebendsdown.wordpress.com/feed/')
@@ -739,14 +677,8 @@ if __name__ == '__main__':
     # status, myFeeds = get_feed_status('https://hebendsdown.wordpress.com/feed/', myFeeds)
     # print(status)
 
-    # -- display an RSS address, if it exists, in a browser window
-    # if get_url_status(url) == 200:
-    #     show_lastest_rss(url)
-    # else:
-    #     print('Sorry. We could not find ', url, sep='')
-
     # -- go through the entire list of RSS addresses and return a list of changed sites
     # changed_sites, bad_feeds = find_all_changes(myFeeds)
 
     # -- print all the functions in this script
-    # print_all_functions()
+    print_all_functions()
