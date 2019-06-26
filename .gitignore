@@ -1,3 +1,4 @@
+.gitigore
 .history/
 .vscode/
 __pycache__/
