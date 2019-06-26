@@ -50,30 +50,6 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
-# // still not happy with speed of get_feed_status(). It may be limited by the speed of the feedparser module
-
-# // -- add a short menu after listing feed titles in list_updated_feeds():
-    # // <u>nread only   <r>ead and unread    <s>et post to unread
-    # // Which page to read?
-
-# // add ability to UNREAD a post
-
-# // -- add the ability to mark a range of articles or -all- articles as read (or unread)
-# // -- add a default group to {myFeeds}, in case user adds a feed, but chooses no group
-# // -- add a utility that allows user to manually enter a new feed
-    # -- enter URL of feed and optionally a group (new or existing)
-    # -- go to the URL, get the RSS feed address
-    # -- fill in the following fields in {myFeeds}
-        # -- 0: feed title
-        # -- 1: feed RSS
-        # -- 2: feed URL
-        # -- 3: feed.ETag (blank)
-        # -- 4: feed.modified (blank)
-        # -- 5: feed.updated (blank)
-        # -- 6: hash of last entry posted on website (blank)
-        # -- 7: link to last entry posted on website (blank)
-# // -- need a utility that allows deletion of a feed
-
 # todo -- clean_feeds() cleans up {myFeeds} when a feed is deleted; now need a way to remove duplicates
 
 # todo -- need a utility that allows a feed to change groups
@@ -88,8 +64,7 @@ def get_feed_info(rss):
     """
     Utility function to print information about a news feed. USED ONLY BY THE DEVELOPER.
     """
-    rss = 'https://leashoflonging.wordpress.com/feed/'
-    rss = 'http://keefox.org'
+
     try:
         newsfeed = feedparser.parse(rss)
         # entries is the only dict in [newsfeed_keys]
@@ -224,7 +199,7 @@ def import_OPML(myFeeds):
                             """, re.X)
 
             # put Group, title, and RSS in {myFeeds}
-            myFeeds = {}
+            myFeeds = {'Default': []}
             for ndx, line in enumerate(feedly):
                 m_Feed_Group = re.search(rem_Feed_Group, line)
                 m_Feed_Title = re.search(rem_title, line)
@@ -424,7 +399,7 @@ def add_feed(myFeeds):
 
 def clean_feeds(myFeeds):
     """
-    Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes 
+    Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes
     a feed: that fxn sets the title to ''
     """
     # delete any feed with no title
@@ -432,6 +407,13 @@ def clean_feeds(myFeeds):
         for ndx, i in enumerate(v):
             if not i[0]:
                 v.pop(ndx)
+
+    # delete any duplicate feeds
+    feed_urls = []
+    for k, v in myFeeds.items():
+        feed_tuples = set(tuple(x) for x in v)
+        feed_list = [list(item) for item in feed_tuples]
+        myFeeds.update({k: feed_list})
 
     return myFeeds
 
@@ -442,24 +424,24 @@ def del_feed(myFeeds):
     """
 
     # generate a list of feed names
-    cnt, feed_names = 0, []
+    cnt, feed_names=0, []
     for k, v in myFeeds.items():
         for i in v:
             cnt += 1
             feed_names.append(i[0])
-            print(cnt, '. ', i[0], sep='')
+            print(cnt, '. ', i[0], sep = '')
 
     print()
     # get the name of the feed to delete
     while True:
-        f = input('Number of feed to delete: ').lower()
+        f=input('Number of feed to delete: ').lower()
         if not f:
             break
         try:
-            f = int(f)
+            f=int(f)
             if f < 1 or f > cnt:
                 print('='*30, '\nEnter an integer between 1 and ',
-                      cnt, '.\n', '='*30, sep='')
+                      cnt, '.\n', '='*30, sep = '')
                 continue
             else:
                 break
@@ -670,7 +652,7 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
         current_title = ''
 
     # if the last_title in {myFeeds} == the title of the most recent post, then the feed has not been updated
-    if last_title == hash_a_string(current_title):
+    if last_link == hash_a_string(current_link):
         status = 304
     # otherwise, store this feed's informtion in [rss]
     else:
@@ -749,11 +731,15 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 # find the number of articles in updated_feeds that have already been read
                 cnt_unread_articles = 0
                 for i in range(3, len(chosen_feed)):
-                    if hash_a_string(chosen_feed[i][0]) not in titles_read:
+                    if hash_a_string(chosen_feed[i][1]) not in titles_read:
                         cnt_unread_articles += 1
                 if cnt_unread_articles == 0:
-                    print('='*30, '\nThis feed has not changed since last access.\n',
+                    print('\n', '='*30, '\nThis feed has not changed since last access.\n',
                           '='*30, '\n', sep='', end='')
+                    m = input('\nUnread some articles? (Y/N) ').lower()
+                    if m == 'y':
+                        titles_read = set_post_to_unread(
+                            titles_read, chosen_feed)
                     break
 
                 # structure of [updated_feeds]
@@ -765,7 +751,7 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 print()
                 # print all the available posts, depending on show_read setting
                 for cnt in range(3, len(chosen_feed)):
-                    if hash_a_string(chosen_feed[cnt][0]) not in titles_read:
+                    if hash_a_string(chosen_feed[cnt][1]) not in titles_read:
                         print(cnt-2, ': ', chosen_feed[cnt][0], sep='')
                     elif show_read == 'read':
                         print('*', cnt-2, ': ', chosen_feed[cnt][0], sep='')
@@ -777,9 +763,10 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 # print a menu
                 post_menu = [
                     '<t>oggle showing read articles',
-                    'post to set to <u>nread'
+                    'post to set to <u>nread',
+                    'post to set to <r>ead'
                 ]
-                for i in range(2):
+                for i in range(len(post_menu)):
                     print(post_menu[i])
 
                 # get a specific article from this feed
@@ -788,11 +775,14 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 if not post:
                     break
 
-                if post in ['t', 'u']:
+                if post in ['t', 'u', 'r']:
                     if post == 't':
                         show_read = toggle_show_read_articles(show_read)
                     elif post == 'u':
                         titles_read = set_post_to_unread(
+                            titles_read, chosen_feed)
+                    elif post == 'r':
+                        titles_read = set_post_to_read(
                             titles_read, chosen_feed)
                 else:
                     try:
@@ -811,13 +801,13 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                     if post:
                         print('showing', chosen_feed[post+2][0])
                         # show_lastest_rss(chosen_feed[post+2][1])
-                        current_title = hash_a_string(chosen_feed[post+2][0])
-                        titles_read.append(current_title)
+                        current_link = hash_a_string(chosen_feed[post+2][1])
+                        titles_read.append(current_link)
                         for k, v in myFeeds.items():
                             for feed in v:
                                 if feed[0] == chosen_feed[0]:
                                     try:
-                                        feed[6] = hash_a_string(current_title)
+                                        feed[6] = hash_a_string(current_link)
                                         # feed[7] = feed_update['entries'][0]['link']
                                     except:
                                         pass
@@ -849,6 +839,7 @@ def set_post_to_unread(titles_read, chosen_feed):
     print()
     while True:
         article_number = input("Number or range of post(s) to set to unread: ")
+        print()
 
         # if the user enters a range of articles...
         if '-' in article_number:
@@ -877,12 +868,63 @@ def set_post_to_unread(titles_read, chosen_feed):
     return titles_read
 
 
+def set_post_to_read(titles_read, chosen_feed):
+    """
+    In list_updated_feeds(), set one or more unread posts to read.
+    """
+    print()
+    while True:
+        article_number = input("Number or range of post(s) to set to read: ")
+
+        # if the user enters a range of articles...
+        if '-' in article_number:
+            try:
+                ndx = article_number.index('-')
+                start_num = int(article_number[0:ndx])
+                end_num = int(article_number[ndx+1:])+1
+            except ValueError:
+                print(
+                    '='*30, '\nEnter a range of integers separated by a hyphen.\n', '='*30, sep='')
+                return titles_read
+            for i in range(start_num, end_num):
+                titles_read = set_to_read_one_article(i, chosen_feed, titles_read)
+            break
+        else:
+            try:
+                article_number = int(article_number)
+            except:
+                print('='*30, '\nEnter an integer between 1 and ',
+                      len(chosen_feed)-3, '\n', '='*30, '\n', sep='', end='')
+                continue
+            if not article_number:
+                break
+            else:
+                titles_read = unread_one_article(
+                    article_number, chosen_feed, titles_read)
+                break
+    return titles_read
+
+
+def set_to_read_one_article(article_number, chosen_feed, titles_read):
+    """
+    Utility function to set one article in a feed to 'read'.
+    """
+    title = hash_a_string(chosen_feed[article_number+2][1])
+
+    titles_read.append(title)
+    # strip out repeat titles
+    titles_read = list(set(titles_read))
+    print()
+
+    return titles_read
+
+
 def unread_one_article(article_number, chosen_feed, titles_read):
     """
     Utility function to unread one article in a feed.
     """
     try:
-        title = hash_a_string(chosen_feed[article_number+2][0])
+        title = hash_a_string(chosen_feed[article_number+2][1])
     # in case user chose a title that is unread...
         try:
             ndx = titles_read.index(title)
@@ -978,6 +1020,11 @@ def load_myFeeds_dict():
         # at a minimum, {myFeeds} contains a default group
         myFeeds = {"Default": [[]]}
 
+    # for k, v in myFeeds.items():
+    #     print(k)
+    #     for i in v:
+    #         print('   ', i[0])
+
     return myFeeds
 
 
@@ -996,6 +1043,7 @@ def main_menu(myFeeds, titles_read):
     while True:
         print()
         for i in range(0, len(menu), 3):
+            m = ''.join(menu[i:i+3])
             m = ''.join(menu[i:i+3])
             print(m)
         print()
@@ -1057,6 +1105,8 @@ def main():
         # -- 7: link to last entry posted on website
     myFeeds = load_myFeeds_dict()
 
+    myFeeds = clean_feeds(myFeeds)
+
     # display menu on screen
     myFeeds, titles_read = main_menu(myFeeds, titles_read)
 
@@ -1083,7 +1133,7 @@ if __name__ == '__main__':
     # ============ UTILITY FUNCTIONS FOR TESTING PURPOSES ============
 
     # -- print various attributes of a single RSS feed
-    # get_feed_info('')
+    # get_feed_info('http://ravenwilderness.blogspot.com/feeds/posts/default?alt=rss')
 
     # -- print all the functions in this script
     # print_all_functions()
