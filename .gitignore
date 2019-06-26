@@ -1,4 +1,4 @@
-.gitigore
+.gitignore
 .history/
 .vscode/
 __pycache__/
