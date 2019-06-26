@@ -1,0 +1,10 @@
+.gitigore
+.history/
+.vscode/
+__pycache__/
+scratch.py
+*.pyc
+*.orig
+*.opml
+*.txt
+*.json
