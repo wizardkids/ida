@@ -63,3 +63,9 @@
     -- add findfeed(), courtesy https://alex.miller.im/
     -- add del_feed(), allows user to delete a feed
     -- add clean_feeds(), cleans up {myFeeds} by deleting feeds with no title.
+
+2019-06-26
+    -- grouped functions (with labels) according to their function
+    -- many minor/major edits
+    -- fixed ability to add a new group
+    -- add ability to list bad feeds

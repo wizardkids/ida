@@ -82,260 +82,7 @@ from bs4 import BeautifulSoup as bs4
 # todo -- add a utility that can convert a hash back into a title
 
 
-def add_feed(myFeeds):
-    """
-    Allows user to add a feed to {myFeeds}, including an optional group.
-
-    # -- enter URL of feed and optionally a group (new or existing)
-    # -- go to the URL, get the RSS feed address
-    # -- fill in the following fields in {myFeeds}
-        # -- 0: feed title
-        # -- 1: feed RSS
-        # -- 2: feed URL
-        # -- 3: feed.ETag (blank)
-        # -- 4: feed.modified (blank)
-        # -- 5: feed.updated (blank)
-        # -- 6: hash of last entry posted on website (blank)
-        # -- 7: link to last entry posted on website (blank)
-    """
-    print()
-    # enter a URL, find the feed address, parse the feed
-    f = input('Website address: ').lower()
-    try:
-        result = findfeed(f)
-        # check alternate RSS formats
-        if not result:
-            result = findfeed(f + '/feed')
-        if not result:
-            result = findfeed(f + '/?feed=rss')
-        if not result:
-            result = findfeed(f + '/feed/rss2')
-        if not result:
-            result = findfeed(f + '/blog/feed')
-        if not result:
-            result = findfeed(f + '/atom.xml')
-        if not result:
-            result = feedburner_rss(f)
-        if not result:
-            result = feed_xml(f)
-    except:
-        print('='*30, '\nDid you forget "http://"?\n', '='*30, '\n', sep='')
-        return myFeeds
-
-    print(result)
-    print(type(result))
-    rss_address = ''
-    if isinstance(result, list):
-        for r in result:
-            if 'comments' not in r:
-                rss_address = r
-    else:
-        rss_address = result
-
-    if rss_address:
-        feed = feedparser.parse(rss_address)
-    else:
-        print('='*30, '\nNo RSS address found.\n', '='*30, '\n', sep='')
-        rss_address = input("Enter RSS address manually: ").lower()
-        feed = feedparser.parse(rss_address)
-
-        if not rss_address or not feed['entries']:
-            print('='*30, '\nBad RSS address or no address found.\n', '='*30, '\n', sep='')
-            return myFeeds
-
-    # add info into [new_feed]
-    new_feed = []
-    new_feed.append(feed['feed']['title'])
-    new_feed.append(feed['href'])
-    new_feed.append(f)
-    new_feed.append('')
-    new_feed.append('')
-    new_feed.append('')
-    new_feed.append(feed['entries'][0]['title'])
-    new_feed.append(feed['entries'][0]['link'])
-
-    for i in new_feed:
-        print(i)
-
-    # get the group that the feed should be added to...
-    print('\nGroups:')
-    cnt, kys = 0, list(myFeeds.keys())
-    for g in kys:
-        cnt += 1
-        print('  ', cnt, ': ', g, sep='')
-
-    print('  ', cnt+1, ': ', 'None', sep='')
-
-    print()
-
-    while True:
-        g = input('Add new feed to which group? ')
-        if not g:
-            g = 0
-            break
-        try:
-            g = int(g)
-            if g < 1 or g > len(kys):
-                print('='*30, '\nEnter an integer between 1 and ',
-                    len(kys), '\n', '='*30, '\n', sep='')
-                continue
-            else:
-                break
-        except:
-            print('='*30, '\nEnter an integer between 1 and ', len(kys), '\n', '='*30, '\n', sep='')
-            continue
-
-    print('kys:\n', kys)
-
-    # translate a group number into a group name so you can find it in myFeeds.keys()
-    if g <= len(kys):
-        grp_name = kys[g-1]
-    elif g == len(kys) + 1:
-        grp_name = 'Default'
-    else:
-        grp_name = ''
-
-    # add [new_feed] to the appropriate group
-    if grp_name:
-        # if the group already exists...
-        if grp_name in myFeeds.keys():
-            myFeeds[grp_name].append(new_feed)
-        # otherwise, create a new group
-        else:
-            myFeeds.update({grp_name: [new_feed]})
-
-    return myFeeds
-
-
-def del_feed(myFeeds):
-    """
-    Delete a feed.
-    """
-
-    # generate a list of feed names
-    cnt, feed_names = 0, []
-    for k, v in myFeeds.items():
-        for i in v:
-            cnt += 1
-            feed_names.append(i[0])
-            print(cnt, '. ', i[0], sep='')
-
-    print()
-    # get the name of the feed to delete
-    while True:
-        f = input('Number of feed to delete: ').lower()
-        if not f:
-            break
-        try:
-            f = int(f)
-            if f < 1 or f > cnt:
-                print('='*30, '\nEnter an integer between 1 and ', cnt, '.\n', '='*30, sep='')
-                continue
-            else:
-                break
-        except ValueError:
-            print('='*30, '\nEnter an integer between 1 and ', cnt, '.\n', '='*30, sep='')
-            continue
-
-    # find that name in {myFeeds} and set title to ''
-    if f:
-        this_feed = feed_names[f-1]
-        for k, v in myFeeds.items():
-            for i in v:
-                if i[0] == this_feed:
-                    i[0] = ''
-                    break
-            if not i[0]:
-                break
-
-    myFeeds = clean_feeds(myFeeds)
-
-    print()
-
-    return myFeeds
-
-
-def feed_xml(f):
-    """
-    Find a feed when the blog uses an xml address.
-    """
-    feed = feedparser.parse(f)
-    result = feed['href'] + 'index.xml'
-
-    return result
-
-
-def feedburner_rss(f):
-    """
-    Find a feed when the blogger is using feedburner.
-    """
-    feed = requests.get(f)
-    txt = feed.content.decode('utf-8')
-
-    rem_uri = re.compile(r"""
-            (href=\"//feedburner.google.com/)(.*uri=)(?P<feed_uri>.*)(&amp)
-            """, re.X)
-
-    m_feed_uri = re.search(rem_uri, txt)
-
-    if m_feed_uri:
-        this_uri = m_feed_uri.group("feed_uri")
-        result = 'http://feeds.feedburner.com/' + this_uri
-    else:
-        result = ''
-
-    return result
-
-
-def clean_feeds(myFeeds):
-    """
-    Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes a feed: the fxn sets the title to ''
-    """
-    # delete any feed with no title
-    for k, v in myFeeds.items():
-        for ndx, i in enumerate(v):
-            if not i[0]:
-                v.pop(ndx)
-            
-    return myFeeds
-
-
-def findfeed(site):
-    """
-    Python 3 function for extracting RSS feeds from URLs.
-    
-    Source: https://gist.github.com/alexmill/9bc634240531d81c3abe
-    Attribution: https://alex.miller.im/
-    """
-    raw = requests.get(site).text
-    result = []
-    possible_feeds = []
-    html = bs4(raw)
-    feed_urls = html.findAll("link", rel="alternate")
-    if len(feed_urls) > 1:
-        for f in feed_urls:
-            t = f.get("type", None)
-            if t:
-                if "rss" in t or "xml" in t:
-                    href = f.get("href", None)
-                    if href:
-                        possible_feeds.append(href)
-    parsed_url = urllib.parse.urlparse(site)
-    base = parsed_url.scheme+"://"+parsed_url.hostname
-    atags = html.findAll("a")
-    for a in atags:
-        href = a.get("href", None)
-        if href:
-            if "xml" in href or "rss" in href or "feed" in href:
-                possible_feeds.append(base+href)
-    for url in list(set(possible_feeds)):
-        f = feedparser.parse(url)
-        if len(f.entries) > 0:
-            if url not in result:
-                result.append(url)
-
-    return result
-
+# ================ DEVELOPER UTILITY FUNCTIONS ================
 
 def get_feed_info(rss):
     """
@@ -437,6 +184,8 @@ def print_all_functions():
     return
 
 
+# ================ IMPORT OPML FILE ================
+
 def import_OPML(myFeeds):
     """
     Parse an OPML file and put group names, feed titles, and feed addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2], placeholder feed.ETag, feed.modified, feed.updated], [...]], ... }. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
@@ -531,88 +280,282 @@ def import_OPML(myFeeds):
     return err, myFeeds
 
 
-def load_myFeeds_dict():
+def get_url_status(url):
     """
-    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Structure of {myFeeds}:
+    Get the status code for a URL. This function is used during import of an OPML file to be sure each feed is accessible.
+    """
+    # set the headers like we are a browser
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    # download the url and get its status, if any
+    try:
+        r = requests.get(url, headers=headers)
+        status_code = r.status_code
+    except:
+        print('Cannot connect to', url)
+        status_code = 404
 
+    return status_code
+
+
+# ================ FEED MANAGEMENT ================
+
+def add_feed(myFeeds):
+    """
+    Allows user to add a feed to {myFeeds}, including an optional group.
+
+    - enter URL of feed and optionally a group (new or existing)
+    - go to the URL, get the RSS feed address
+
+    # -- fill in the following fields in {myFeeds}
         # -- 0: feed title
         # -- 1: feed RSS
         # -- 2: feed URL
-        # -- 3: feed.ETag
-        # -- 4: feed.modified
-        # -- 5: feed.updated
-        # -- 6: hash of title of last entry posted on website
-        # -- 7: link to last entry posted on website
+        # -- 3: feed.ETag (blank)
+        # -- 4: feed.modified (blank)
+        # -- 5: feed.updated (blank)
+        # -- 6: hash of last entry posted on website (blank)
+        # -- 7: link to last entry posted on website (blank)
     """
+    print()
+    # enter a URL, find the feed address, parse the feed
+    f = input('Website address: ').lower()
     try:
-        with open("myFeeds.json", 'r') as file:
-            myFeeds = json.load(file)
-    except FileNotFoundError:
-        # at a minimum, {myFeeds} contains a default group
-        myFeeds = {"Default": [[]]}
+        result = findfeed(f)
+        # check alternate RSS formats
+        if not result:
+            result = findfeed(f + '/feed')
+        if not result:
+            result = findfeed(f + '/?feed=rss')
+        if not result:
+            result = findfeed(f + '/feed/rss2')
+        if not result:
+            result = findfeed(f + '/blog/feed')
+        if not result:
+            result = findfeed(f + '/atom.xml')
+        if not result:
+            result = feedburner_rss(f)
+        if not result:
+            result = feed_xml(f)
+    except:
+        print('='*30, '\nDid you forget "http://"?\n', '='*30, '\n', sep='')
+        return myFeeds
+
+    rss_address = ''
+    if isinstance(result, list):
+        for r in result:
+            if 'comments' not in r:
+                rss_address = r
+    else:
+        rss_address = result
+
+    if rss_address:
+        feed = feedparser.parse(rss_address)
+    else:
+        print('='*30, '\nNo RSS address found.\n', '='*30, '\n', sep='')
+        rss_address = input("Enter RSS address manually: ").lower()
+        feed = feedparser.parse(rss_address)
+
+        if not rss_address or not feed['entries']:
+            print('='*30, '\nBad RSS address or no address found.\n',
+                  '='*30, '\n', sep='')
+            return myFeeds
+
+    # add info into [new_feed]
+    new_feed = []
+    new_feed.append(feed['feed']['title'])
+    new_feed.append(feed['href'])
+    new_feed.append(f)
+    new_feed.append('')
+    new_feed.append('')
+    new_feed.append('')
+    new_feed.append(feed['entries'][0]['title'])
+    new_feed.append(feed['entries'][0]['link'])
+
+    # get the group that the feed should be added to...
+    print('\nGroups:')
+    cnt, kys = 0, list(myFeeds.keys())
+    for grp_name in kys:
+        cnt += 1
+        print('  ', cnt, ': ', grp_name, sep='')
+
+    print('  ', cnt+1, ': ', 'None', sep='')
+
+    print()
+
+    while True:
+        grp_name = input('Add new feed to which group (or enter new group)? ')
+        if not grp_name:
+            grp_name = 0
+            break
+        try:
+            grp_name = int(grp_name)
+            if grp_name < 1 or grp_name > len(kys):
+                print('='*30, '\nEnter an integer between 1 and ',
+                      len(kys), '\n', '='*30, '\n', sep='')
+                continue
+            else:
+                break
+        except:
+            # if a non-integer was entered, assume it's a group name
+            break
+
+    # translate a group number into a group name so you can find it in myFeeds.keys()
+    if isinstance(grp_name, int):
+        if grp_name <= len(kys):
+            grp_name = kys[grp_name-1]
+        elif grp_name == len(kys) + 1:
+            grp_name = 'Default'
+        else:
+            grp_name = ''
+
+    # add [new_feed] to the appropriate group
+    if isinstance(grp_name, str):
+        if grp_name:
+            # if the group already exists...
+            if grp_name in myFeeds.keys():
+                myFeeds[grp_name].append(new_feed)
+            # otherwise, create a new group
+            else:
+                myFeeds.update({grp_name: [new_feed]})
 
     return myFeeds
 
 
-def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
+def clean_feeds(myFeeds):
     """
-    Access a feed. Compare the title of the most recent post to the title stored in {myFeeds}. If they are the same, then the feed has not been updated. If they are different, then add the feed info to [updated_feeds].
-
-    arg rss_feed contains:
-        feed title
-        RSS address
-        link to the latest post
+    Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes 
+    a feed: that fxn sets the title to ''
     """
-    # -- https://pythonhosted.org/feedparser/http-ETag.html
-    # -- https://fishbowl.pastiche.org/2002/10/21/http_conditional_get_for_rss_hackers
-
-    # if status is other than 304, then add this title to [updated_feeds]
-        # -- [rss_feed] structure to be added to [updated_feeds]:
-        # -- fed title
-        # -- RSS address
-        # -- the most recent post link
-        # -- n items containing lists of [post-title, post-link]
-
-    # get last article title and link that was read
+    # delete any feed with no title
     for k, v in myFeeds.items():
-        for newsfeed in v:
-            if newsfeed[0] == rss_feed[0]:
-                last_title = newsfeed[6]
-                last_link = newsfeed[7]
+        for ndx, i in enumerate(v):
+            if not i[0]:
+                v.pop(ndx)
 
-    feed_update = feedparser.parse(rss_feed[1])
+    return myFeeds
 
-    # get the link to the most recent post
-    try:
-        current_link = feed_update['entries'][0]['link']
-    except IndexError:
-        current_link = ''
 
-    # get the title of the most recent post
-    try:
-        current_title = feed_update['entries'][0]['title']
-    except:
-        current_title = ''
+def del_feed(myFeeds):
+    """
+    Delete a feed.
+    """
 
-    # if the last_title in {myFeeds} == the title of the most recent post, then the feed has not been updated
-    if last_title == hash_a_string(current_title):
-        status = 304
-    # otherwise, store this feed's informtion in [rss]
-    else:
+    # generate a list of feed names
+    cnt, feed_names = 0, []
+    for k, v in myFeeds.items():
+        for i in v:
+            cnt += 1
+            feed_names.append(i[0])
+            print(cnt, '. ', i[0], sep='')
+
+    print()
+    # get the name of the feed to delete
+    while True:
+        f = input('Number of feed to delete: ').lower()
+        if not f:
+            break
         try:
-            # add to [rss] all the titles and links available in ['entries'] for this particular feed
-            for ndx, i in enumerate(feed_update['entries']):
-                rss_feed.append([i['title'], i['link']])
+            f = int(f)
+            if f < 1 or f > cnt:
+                print('='*30, '\nEnter an integer between 1 and ',
+                      cnt, '.\n', '='*30, sep='')
+                continue
+            else:
+                break
+        except ValueError:
+            print('='*30, '\nEnter an integer between 1 and ',
+                  cnt, '.\n', '='*30, sep='')
+            continue
 
-            # put the link to the most recent post in rss_feed[2]
-            rss_feed[2] = current_link
-            updated_feeds.append(rss_feed)
+    # find that name in {myFeeds} and set title to ''
+    if f:
+        this_feed = feed_names[f-1]
+        for k, v in myFeeds.items():
+            for i in v:
+                if i[0] == this_feed:
+                    i[0] = ''
+                    break
+            if not i[0]:
+                break
 
-        except:
-            bad_feeds.append(rss_feed)
+    myFeeds = clean_feeds(myFeeds)
 
-    return myFeeds, updated_feeds, bad_feeds
+    print()
 
+    return myFeeds
+
+
+def feed_xml(f):
+    """
+    Find a feed when the blog uses an xml address.
+    """
+    feed = feedparser.parse(f)
+    result = feed['href'] + 'index.xml'
+
+    return result
+
+
+def feedburner_rss(f):
+    """
+    Find a feed when the blogger is using feedburner.
+    """
+    feed = requests.get(f)
+    txt = feed.content.decode('utf-8')
+
+    rem_uri = re.compile(r"""
+            (href=\"//feedburner.google.com/)(.*uri=)(?P<feed_uri>.*)(&amp)
+            """, re.X)
+
+    m_feed_uri = re.search(rem_uri, txt)
+
+    if m_feed_uri:
+        this_uri = m_feed_uri.group("feed_uri")
+        result = 'http://feeds.feedburner.com/' + this_uri
+    else:
+        result = ''
+
+    return result
+
+
+def findfeed(site):
+    """
+    Python 3 function for extracting RSS feeds from URLs.
+    
+    Source: https://gist.github.com/alexmill/9bc634240531d81c3abe
+    Attribution: https://alex.miller.im/
+    """
+    raw = requests.get(site).text
+    result = []
+    possible_feeds = []
+    html = bs4(raw, features="lxml")
+    feed_urls = html.findAll("link", rel="alternate")
+    if len(feed_urls) > 1:
+        for f in feed_urls:
+            t = f.get("type", None)
+            if t:
+                if "rss" in t or "xml" in t:
+                    href = f.get("href", None)
+                    if href:
+                        possible_feeds.append(href)
+    parsed_url = urllib.parse.urlparse(site)
+    base = parsed_url.scheme+"://"+parsed_url.hostname
+    atags = html.findAll("a")
+    for a in atags:
+        href = a.get("href", None)
+        if href:
+            if "xml" in href or "rss" in href or "feed" in href:
+                possible_feeds.append(base+href)
+    for url in list(set(possible_feeds)):
+        f = feedparser.parse(url)
+        if len(f.entries) > 0:
+            if url not in result:
+                result.append(url)
+
+    return result
+
+
+# ================ CHECK FEEDS FOR UPDATES ================
 
 def find_all_changes(myFeeds):
     """
@@ -620,7 +563,7 @@ def find_all_changes(myFeeds):
     """
     rss_list, updated_feeds, bad_feeds = [], [], []
 
-    # not used unless you uncomment lined of code below
+    # not used unless you uncomment lines of code below
     # other_feeds, unchanged_feeds = [], []
     # site_200, site_301, site_302, site_303 = [], [], [], []
     # site_403, site_410 = [], []
@@ -630,7 +573,11 @@ def find_all_changes(myFeeds):
         # each group contains a list of websites for a given category.
         # so iterate through each item of each list
         for i in group:
-            rss_list.append([i[0], i[1], i[7]])
+            # in case group is empty
+            try:
+                rss_list.append([i[0], i[1], i[7]])
+            except:
+                break
 
     for rss_feed in rss_list:
         # [rss_feed] entering get_feed_status():
@@ -676,6 +623,216 @@ def find_all_changes(myFeeds):
     # print('\nother_feeds\n', other_feeds, sep='')
 
     return updated_feeds, bad_feeds, myFeeds
+
+
+def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
+    """
+    Access a feed. Compare the title of the most recent post to the title stored in {myFeeds}. If they are the same, then the feed has not been updated. If they are different, then add the feed info to [updated_feeds].
+
+    arg rss_feed contains:
+        feed title
+        RSS address
+        link to the latest post
+    """
+    # -- https://pythonhosted.org/feedparser/http-ETag.html
+    # -- https://fishbowl.pastiche.org/2002/10/21/http_conditional_get_for_rss_hackers
+
+    # if status is other than 304, then add this title to [updated_feeds]
+        # -- [rss_feed] structure to be added to [updated_feeds]:
+        # -- fed title
+        # -- RSS address
+        # -- the most recent post link
+        # -- n items containing lists of [post-title, post-link]
+
+    # get last article title and link that was read
+    for k, v in myFeeds.items():
+        for newsfeed in v:
+            # in case group is empty
+            try:
+                if newsfeed[0] == rss_feed[0]:
+                    last_title = newsfeed[6]
+                    last_link = newsfeed[7]
+            except:
+                break
+
+    feed_update = feedparser.parse(rss_feed[1])
+
+    # get the link to the most recent post
+    try:
+        current_link = feed_update['entries'][0]['link']
+    except IndexError:
+        current_link = ''
+
+    # get the title of the most recent post
+    try:
+        current_title = feed_update['entries'][0]['title']
+    except:
+        current_title = ''
+
+    # if the last_title in {myFeeds} == the title of the most recent post, then the feed has not been updated
+    if last_title == hash_a_string(current_title):
+        status = 304
+    # otherwise, store this feed's informtion in [rss]
+    else:
+        try:
+            # add to [rss] all the titles and links available in ['entries'] for this particular feed
+            for ndx, i in enumerate(feed_update['entries']):
+                rss_feed.append([i['title'], i['link']])
+
+            # put the link to the most recent post in rss_feed[2]
+            rss_feed[2] = current_link
+            updated_feeds.append(rss_feed)
+
+        except:
+            bad_feeds.append(rss_feed)
+
+    return myFeeds, updated_feeds, bad_feeds
+
+
+def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
+    """
+    Create a list of your feeds. Let user select from that list one feed and then create a list of updated articles. Default to filtering out articles that have been read. Let user choose articles to read online.
+    """
+    # default for article list is to show only unread articles
+    show_read = 'unread'
+    show_bad = False
+
+    sf = input('\nShow bad feeds? (Y/N)').lower()
+    show_bad = True if sf == 'y' else False
+
+    if show_bad:
+        print()
+        print('='*5, ' UNREACHABLE FEEDS ', '='*5, sep='')
+        for i in bad_feeds:
+            print(i)
+        print('='*29, sep='')
+
+    print()
+    while True:
+        if len(updated_feeds) == 0:
+            print('\n', '='*30, '\nNone of your feeds have updated since last check.\n',
+                  '='*30, '\n', sep='', end='')
+            f = input('Press <ENTER> to continue...')
+            break
+
+        for ndx, i in enumerate(updated_feeds):
+            print(ndx+1, '. ', i[0], sep='')
+        print()
+
+        while True:
+            choice = input('Select feed: ')
+            if not choice:
+                break
+            try:
+                choice = int(choice)
+                if choice < 1 or choice > len(updated_feeds):
+                    print('='*30, '\nEnter an integer between 1 and ',
+                          len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
+                    continue
+                else:
+                    break
+            except ValueError:
+                print('='*30, '\nEnter an integer between 1 and ',
+                      len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
+                continue
+
+        if not choice:
+            break
+        else:
+            err = ''
+
+            # have user choose which post to view
+            while True:
+
+                chosen_feed = updated_feeds[choice-1]
+
+                # find the number of articles in updated_feeds that have already been read
+                cnt_unread_articles = 0
+                for i in range(3, len(chosen_feed)):
+                    if hash_a_string(chosen_feed[i][0]) not in titles_read:
+                        cnt_unread_articles += 1
+                if cnt_unread_articles == 0:
+                    print('='*30, '\nThis feed has not changed since last access.\n',
+                          '='*30, '\n', sep='', end='')
+                    break
+
+                # structure of [updated_feeds]
+                # -- feed title
+                # -- RSS address
+                # -- the link to the most recent post
+                # -- n items containing lists of [post-title, post-link]
+
+                print()
+                # print all the available posts, depending on show_read setting
+                for cnt in range(3, len(chosen_feed)):
+                    if hash_a_string(chosen_feed[cnt][0]) not in titles_read:
+                        print(cnt-2, ': ', chosen_feed[cnt][0], sep='')
+                    elif show_read == 'read':
+                        print('*', cnt-2, ': ', chosen_feed[cnt][0], sep='')
+                print()
+
+                if err:
+                    print(err)
+
+                # print a menu
+                post_menu = [
+                    '<t>oggle showing read articles',
+                    'post to set to <u>nread'
+                ]
+                for i in range(2):
+                    print(post_menu[i])
+
+                # get a specific article from this feed
+                post = input(
+                    '\nSelect from menu or a numbered article: ').lower().strip()
+                if not post:
+                    break
+
+                if post in ['t', 'u']:
+                    if post == 't':
+                        show_read = toggle_show_read_articles(show_read)
+                    elif post == 'u':
+                        titles_read = set_post_to_unread(
+                            titles_read, chosen_feed)
+                else:
+                    try:
+                        post = int(post)
+                        if post + 2 < 3 or post + 3 > len(chosen_feed):
+                            err = '='*30 + '\nEnter an integer between 1 and ' + \
+                                str(len(chosen_feed)-3) + \
+                                ' or a menu item\n' + '='*30 + '\n'
+                            continue
+                    except ValueError:
+                        err = '='*30 + '\nEnter an integer between 1 and ' + \
+                            str(len(chosen_feed)-3) + \
+                            ' or a menu item\n' + '='*30 + '\n'
+                        continue
+
+                    if post:
+                        print('showing', chosen_feed[post+2][0])
+                        # show_lastest_rss(chosen_feed[post+2][1])
+                        current_title = hash_a_string(chosen_feed[post+2][0])
+                        titles_read.append(current_title)
+                        for k, v in myFeeds.items():
+                            for feed in v:
+                                if feed[0] == chosen_feed[0]:
+                                    try:
+                                        feed[6] = hash_a_string(current_title)
+                                        # feed[7] = feed_update['entries'][0]['link']
+                                    except:
+                                        pass
+                                    break
+                    else:
+                        break
+
+            if cnt_unread_articles == 0:
+                continue
+
+            if not post:
+                continue
+
+    return myFeeds, updated_feeds, titles_read
+
 
 def toggle_show_read_articles(show_read):
     """
@@ -740,150 +897,6 @@ def unread_one_article(article_number, chosen_feed, titles_read):
     return titles_read
 
 
-def list_updated_feeds(myFeeds, updated_feeds, titles_read):
-    """
-    Create a list of your feeds. Let user select from that list one feed and then create a list of updated articles. Default to filtering out articles that have been read. Let user choose articles to read online.
-    """
-    # default for article list is to show only unread articles
-    show_read = 'unread'
-
-    print()
-    while True:
-        if len(updated_feeds) == 0:
-            print('\n', '='*30, '\nNone of your feeds have updated since last check.\n', '='*30, '\n', sep='', end='')
-            f = input('Press <ENTER> to continue...')
-            break
-
-        for ndx, i in enumerate(updated_feeds):
-            print(ndx+1, '. ', i[0], sep='')
-        print()
-
-        while True:
-            choice = input('Select feed: ')
-            if not choice:
-                break
-            try:
-                choice = int(choice)
-                if choice < 1 or choice > len(updated_feeds):
-                    print('='*30, '\nEnter an integer between 1 and ',
-                          len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
-                    continue
-                else:
-                    break
-            except ValueError:
-                print('='*30, '\nEnter an integer between 1 and ',
-                          len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
-                continue
-
-        if not choice:
-            break
-        else:
-            err = ''
-
-            # have user choose which post to view
-            while True:
-
-                chosen_feed = updated_feeds[choice-1]
-
-                # find the number of articles in updated_feeds that have already been read
-                cnt_unread_articles = 0
-                for i in range(3, len(chosen_feed)):
-                    if hash_a_string(chosen_feed[i][0]) not in titles_read:
-                        cnt_unread_articles += 1
-                if cnt_unread_articles == 0:
-                    print('='*30, '\nThis feed has not changed since last access.\n', '='*30, '\n', sep='', end='')
-                    break
-
-                # structure of [updated_feeds]
-                # -- feed title
-                # -- RSS address
-                # -- the link to the most recent post
-                # -- n items containing lists of [post-title, post-link]
-
-                print()
-                # print all the available posts, depending on show_read setting
-                for cnt in range(3, len(chosen_feed)):
-                    if hash_a_string(chosen_feed[cnt][0]) not in titles_read:
-                        print(cnt-2, ': ', chosen_feed[cnt][0], sep='')
-                    elif show_read == 'read':
-                        print('*', cnt-2, ': ', chosen_feed[cnt][0], sep='')
-                print()
-
-                if err:
-                    print(err)
-                
-                # print a menu
-                post_menu = [
-                    '<t>oggle showing read articles', 
-                    'post to set to <u>nread'
-                    ]
-                for i in range(2):
-                    print(post_menu[i])
-
-                # get a specific article from this feed
-                post = input('\nSelect from menu or a numbered article: ').lower().strip()
-                if not post:
-                    break
-
-                if post in ['t', 'u']:
-                    if post == 't':
-                        show_read = toggle_show_read_articles(show_read)
-                    elif post == 'u':
-                        titles_read = set_post_to_unread(titles_read, chosen_feed)
-                else:
-                    try:
-                        post = int(post)
-                        if post + 2 < 3 or post + 3 > len(chosen_feed):
-                            err = '='*30 + '\nEnter an integer between 1 and ' + str(len(chosen_feed)-3) + ' or a menu item\n' + '='*30 + '\n'
-                            continue
-                    except ValueError:
-                        err = '='*30 + '\nEnter an integer between 1 and ' + str(len(chosen_feed)-3) + ' or a menu item\n' + '='*30 + '\n'
-                        continue
-
-                    if post:
-                        print('showing', chosen_feed[post+2][0])
-                        # show_lastest_rss(chosen_feed[post+2][1])
-                        current_title = hash_a_string(chosen_feed[post+2][0])
-                        titles_read.append(current_title)
-                        for k, v in myFeeds.items():
-                            for feed in v:
-                                if feed[0] == chosen_feed[0]:
-                                    try:
-                                        feed[6] = hash_a_string(current_title)
-                                        # feed[7] = feed_update['entries'][0]['link']
-                                    except:
-                                        pass
-                                    break
-                    else:
-                        break
-
-            if cnt_unread_articles == 0:
-                continue
-
-            if not post:
-                continue
-
-    return myFeeds, updated_feeds, titles_read
-
-
-def get_url_status(url):
-    """
-    Get the status code for a URL. This function is used during import of an OPML file to be sure each feed is accessible.
-    """
-    # set the headers like we are a browser
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    # download the url and get its status, if any
-    try:
-        r = requests.get(url, headers=headers)
-        status_code = r.status_code
-    except:
-        print('Cannot connect to', url)
-        status_code = 404
-
-    return status_code
-
-
 def show_lastest_rss(rss):
     """
     Show a RSS feed in a browser window.
@@ -895,12 +908,7 @@ def show_lastest_rss(rss):
     return
 
 
-def fold(txt):
-    """
-    Utility function that textwraps 'txt' 45 characters wide.
-    """
-    return textwrap.fill(txt, width=45)
-
+# ================ STARTUP AND MISCELLANEOUS FUNCTIONS ================
 
 def about():
     """
@@ -919,6 +927,13 @@ def about():
 
     print('='*45)
     return
+
+
+def fold(txt):
+    """
+    Utility function that textwraps 'txt' 45 characters wide.
+    """
+    return textwrap.fill(txt, width=45)
 
 
 def get_revision_number():
@@ -943,6 +958,31 @@ def hash_a_string(this_string):
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
 
+def load_myFeeds_dict():
+    """
+    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Structure of {myFeeds}:
+
+        # -- 0: feed title
+        # -- 1: feed RSS
+        # -- 2: feed URL
+        # -- 3: feed.ETag
+        # -- 4: feed.modified
+        # -- 5: feed.updated
+        # -- 6: hash of title of last entry posted on website
+        # -- 7: link to last entry posted on website
+    """
+    try:
+        with open("myFeeds.json", 'r') as file:
+            myFeeds = json.load(file)
+    except FileNotFoundError:
+        # at a minimum, {myFeeds} contains a default group
+        myFeeds = {"Default": [[]]}
+
+    return myFeeds
+
+
+# ================ MAIN MENU ================
+
 def main_menu(myFeeds, titles_read):
     """
     Print the main menu on the screen and direct the user's choice.
@@ -959,6 +999,7 @@ def main_menu(myFeeds, titles_read):
             m = ''.join(menu[i:i+3])
             print(m)
         print()
+
         menu_choice = input('Choice: ')
 
         if menu_choice.upper() == 'Q':
@@ -969,10 +1010,8 @@ def main_menu(myFeeds, titles_read):
             about()
         elif menu_choice.upper() == 'C':
             updated_feeds, bad_feeds, myFeeds = find_all_changes(myFeeds)
-            # updated_feeds:
-            # [('Ignatian Spirituality', 'http://feeds.feedburner.com/dotMagis?format=xml'), ...]
             myFeeds, updated_feeds, titles_read = list_updated_feeds(
-                myFeeds, updated_feeds, titles_read)
+                myFeeds, updated_feeds, titles_read, bad_feeds)
         elif menu_choice.upper() == 'D':
             myFeeds = del_feed(myFeeds)
         elif menu_choice.upper() == 'E':
@@ -1045,20 +1084,6 @@ if __name__ == '__main__':
 
     # -- print various attributes of a single RSS feed
     # get_feed_info('')
-
-    # -- import OPML file and store RSS info in myFeeds.json; return True if successful
-    # err = import_OPML()
-
-    # -- retrieve all feeds from myFeeds.json and return {myFeeds} as a dict
-    # myFeeds = load_myFeeds_dict()
-
-    # -- check to see if feed has changed; return status code
-    #  -- status is 304 if no change
-    # status, myFeeds = get_feed_status('https://hebendsdown.wordpress.com/feed/', myFeeds)
-    # print(status)
-
-    # -- go through the entire list of RSS addresses and return a list of changed sites
-    # changed_sites, bad_feeds = find_all_changes(myFeeds)
 
     # -- print all the functions in this script
     # print_all_functions()
