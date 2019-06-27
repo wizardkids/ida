@@ -50,15 +50,15 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
-# todo -- clean_feeds() cleans up {myFeeds} when a feed is deleted; now need a way to remove duplicates
+# // -- clean_feeds() cleans up {myFeeds} when a feed is deleted; now need a way to remove duplicates
 
 # todo -- need a utility that allows a feed to change groups
 # todo -- need a utility to delete a group, or edit its name
-# todo -- add utility that reports on unreachable sites [bad_sites]
-# todo -- add a utility that can convert a hash back into a title
+# // -- add utility that reports on unreachable sites [bad_feeds]
+# // -- add a utility that can convert a hash back into a title - NOT POSSIBLE
 
 
-# ================ DEVELOPER UTILITY FUNCTIONS ================
+# === DEVELOPER UTILITY FUNCTIONS ================
 
 def get_feed_info(rss):
     """
@@ -85,10 +85,15 @@ def get_feed_info(rss):
 
         # pprint(newsfeed['entries'], depth=4, width=40, indent=2)
 
+        print('RSS ADDRESS:\n', rss, sep='')
         try:
             print('\nBlog name:', newsfeed['feed']['title'])
         except:
             print('\nNo feed title.')
+        try:
+            print('\nSubtitle:', newsfeed['feed']['subtitle'])
+        except:
+            print('\nNo feed subtitle.')
         try:
             print('\nSite RSS:', newsfeed['href'])
         except:
@@ -159,7 +164,7 @@ def print_all_functions():
     return
 
 
-# ================ IMPORT OPML FILE ================
+# === IMPORT OPML FILE ================
 
 def import_OPML(myFeeds):
     """
@@ -273,7 +278,7 @@ def get_url_status(url):
     return status_code
 
 
-# ================ FEED MANAGEMENT ================
+# === FEED MANAGEMENT ================
 
 def add_feed(myFeeds):
     """
@@ -294,7 +299,7 @@ def add_feed(myFeeds):
     """
     print()
     # enter a URL, find the feed address, parse the feed
-    f = input('Website address: ').lower()
+    f = input('Website address: ')
     try:
         result = findfeed(f)
         # check alternate RSS formats
@@ -310,6 +315,8 @@ def add_feed(myFeeds):
             result = findfeed(f + '/atom.xml')
         if not result:
             result = feedburner_rss(f)
+        if not result:
+            result = youtube_rss(f)
         if not result:
             result = feed_xml(f)
     except:
@@ -328,7 +335,7 @@ def add_feed(myFeeds):
         feed = feedparser.parse(rss_address)
     else:
         print('='*30, '\nNo RSS address found.\n', '='*30, '\n', sep='')
-        rss_address = input("Enter RSS address manually: ").lower()
+        rss_address = input("Enter RSS address manually: ")
         feed = feedparser.parse(rss_address)
 
         if not rss_address or not feed['entries']:
@@ -337,15 +344,29 @@ def add_feed(myFeeds):
             return myFeeds
 
     # add info into [new_feed]
+    # https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw
     new_feed = []
-    new_feed.append(feed['feed']['title'])
-    new_feed.append(feed['href'])
+    try:
+        new_feed.append(feed['feed']['title'])
+    except:
+        new_feed.append('')
+    try:
+        new_feed.append(feed['href'])
+    except:
+        new_feed.append('')
     new_feed.append(f)
     new_feed.append('')
     new_feed.append('')
     new_feed.append('')
-    new_feed.append(feed['entries'][0]['title'])
-    new_feed.append(feed['entries'][0]['link'])
+    new_feed.append('')
+    try:
+        new_feed.append(feed['entries'][0]['title'])
+    except:
+        new_feed.append('')
+    try:
+        new_feed.append(feed['entries'][0]['link'])
+    except:
+        new_feed.append('')
 
     # get the group that the feed should be added to...
     print('\nGroups:')
@@ -353,8 +374,6 @@ def add_feed(myFeeds):
     for grp_name in kys:
         cnt += 1
         print('  ', cnt, ': ', grp_name, sep='')
-
-    print('  ', cnt+1, ': ', 'None', sep='')
 
     print()
 
@@ -377,9 +396,9 @@ def add_feed(myFeeds):
 
     # translate a group number into a group name so you can find it in myFeeds.keys()
     if isinstance(grp_name, int):
-        if grp_name <= len(kys):
+        if grp_name <= len(kys) and grp_name > 0:
             grp_name = kys[grp_name-1]
-        elif grp_name == len(kys) + 1:
+        elif (grp_name == 0) or (grp_name == len(kys) + 1):
             grp_name = 'Default'
         else:
             grp_name = ''
@@ -393,6 +412,8 @@ def add_feed(myFeeds):
             # otherwise, create a new group
             else:
                 myFeeds.update({grp_name: [new_feed]})
+
+    myFeeds = clean_feeds(myFeeds)
 
     return myFeeds
 
@@ -500,6 +521,27 @@ def feedburner_rss(f):
     return result
 
 
+def youtube_rss(f):
+    """
+    Find the feed for a youtube channel (not a single video!).
+
+    
+    """
+    rem = re.compile("""
+            (.*channel/)(?P<yt_channel>.*)"""
+            , re.X)
+
+    m_RSS = re.search(rem, f)
+    if m_RSS:
+        this_channel = m_RSS.group('yt_channel')
+    else:
+        this_channel = ''
+
+    this_RSS = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + this_channel
+
+    return this_RSS
+
+
 def findfeed(site):
     """
     Python 3 function for extracting RSS feeds from URLs.
@@ -537,7 +579,7 @@ def findfeed(site):
     return result
 
 
-# ================ CHECK FEEDS FOR UPDATES ================
+# === CHECK FEEDS FOR UPDATES ================
 
 def find_all_changes(myFeeds):
     """
@@ -950,7 +992,7 @@ def show_lastest_rss(rss):
     return
 
 
-# ================ STARTUP AND MISCELLANEOUS FUNCTIONS ================
+# === STARTUP AND MISCELLANEOUS FUNCTIONS ================
 
 def about():
     """
@@ -1028,15 +1070,15 @@ def load_myFeeds_dict():
     return myFeeds
 
 
-# ================ MAIN MENU ================
+# === MAIN MENU ================
 
 def main_menu(myFeeds, titles_read):
     """
     Print the main menu on the screen and direct the user's choice.
     """
     menu = (
-        '<c>heck feeds  ', '<a>dd feed     ', 'a<b>out      ',
-        '<i>mport OPML  ', '<d>elete feed  ', '<q>uit',
+        '<c>heck feeds  ', '<a>dd feed     ', '<d>elete feed  ',
+        '<i>mport OPML  ', 'a<b>out        ', '<q>uit         ',
     )
     # 'e<x>port feeds '
 
@@ -1133,7 +1175,8 @@ if __name__ == '__main__':
     # ============ UTILITY FUNCTIONS FOR TESTING PURPOSES ============
 
     # -- print various attributes of a single RSS feed
-    # get_feed_info('http://ravenwilderness.blogspot.com/feeds/posts/default?alt=rss')
+    # get_feed_info('https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw')
+
 
     # -- print all the functions in this script
     # print_all_functions()

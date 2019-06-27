@@ -71,3 +71,8 @@
     -- add ability to list bad feeds
     -- instead of hashing titles in [titles_read], hash the URL to the page
     -- fix clean_feeds() so it gets rid of duplicate feeds (per group, only)
+
+
+2019-06-27
+    -- add find feed for youtube channels
+    -- add clean_feeds() to add_feed()
