@@ -50,12 +50,9 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
-# // -- clean_feeds() cleans up {myFeeds} when a feed is deleted; now need a way to remove duplicates
-
-# // -- need a utility that allows a feed to change groups
 # todo -- need a utility to delete a group, or edit its name
-# // -- add utility that reports on unreachable sites [bad_feeds]
-# // -- add a utility that can convert a hash back into a title - NOT POSSIBLE
+
+# todo -- modify functions so that error messages are posted right above input() statements so that the user can easily notice them.
 
 
 # === DEVELOPER UTILITY FUNCTIONS ================
