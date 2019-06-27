@@ -76,3 +76,4 @@
 2019-06-27
     -- add find feed for youtube channels
     -- add clean_feeds() to add_feed()
+    -- add move_feed() to move a feed from one group to another

@@ -52,7 +52,7 @@ from bs4 import BeautifulSoup as bs4
 
 # // -- clean_feeds() cleans up {myFeeds} when a feed is deleted; now need a way to remove duplicates
 
-# todo -- need a utility that allows a feed to change groups
+# // -- need a utility that allows a feed to change groups
 # todo -- need a utility to delete a group, or edit its name
 # // -- add utility that reports on unreachable sites [bad_feeds]
 # // -- add a utility that can convert a hash back into a title - NOT POSSIBLE
@@ -418,10 +418,64 @@ def add_feed(myFeeds):
     return myFeeds
 
 
+def move_feed(myFeeds):
+    """
+    Move a feed to a different group.
+    """
+    while True:
+        # list feeds, by group, numbering the feeds
+        feed_cnt, grp_cnt, feed_list = 0, 0, []
+
+        for k, v in myFeeds.items():
+            print(k, sep='')
+            grp_cnt += 1
+            for i in v:
+                feed_cnt += 1
+                feed_list.append(i)
+                print('   ', feed_cnt, ': ', i[0], sep='')
+        
+        print()
+        # enter the number of the feed to move
+        feed_num = input('Number of feed to move: ')
+        try:
+            feed_num = int(feed_num)
+            feed_name = feed_list[feed_num-1][0]
+            # find the feed in {myFeeds}
+            this_feed = ''
+            for k, v in myFeeds.items():
+                for ndx, i in enumerate(v):
+                    if i[0] == feed_name:
+                        this_feed = i
+                        v.pop(ndx)
+                    if this_feed: break
+                if this_feed: break
+        except:
+            break
+
+        # enter the name of the group to receive the moving feed
+        group_name = input("Enter name of group receiving feed: ").strip()
+        done = False
+        try:  
+            # find the group in {myFeeds}
+            for k, v in myFeeds.items():
+                if k.upper() == group_name.upper():
+                    v.append(this_feed)
+                    done = True
+                    break
+            # in case user entered a garbage group, feed is moved to "Default" group
+            if not done:
+                myFeeds['Default'].append(this_feed)
+        except:
+            break
+        break
+
+    return myFeeds
+
+
 def clean_feeds(myFeeds):
     """
     Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes
-    a feed: that fxn sets the title to ''
+    a feed: del_feed() sets the title to ''
     """
     # delete any feed with no title
     for k, v in myFeeds.items():
@@ -487,6 +541,13 @@ def del_feed(myFeeds):
     print()
 
     return myFeeds
+
+
+def edit_group(myFeeds):
+    """
+    Edit the name of a group.
+    """
+    pass
 
 
 def feed_xml(f):
@@ -1078,6 +1139,7 @@ def main_menu(myFeeds, titles_read):
     """
     menu = (
         '<c>heck feeds  ', '<a>dd feed     ', '<d>elete feed  ',
+        '<m>ove feed    ', '               ', '               ',
         '<i>mport OPML  ', 'a<b>out        ', '<q>uit         ',
     )
     # 'e<x>port feeds '
@@ -1094,26 +1156,37 @@ def main_menu(myFeeds, titles_read):
 
         if menu_choice.upper() == 'Q':
             break
+
         elif menu_choice.upper() == 'A':
             myFeeds = add_feed(myFeeds)
+
         elif menu_choice.upper() == 'B':
             about()
+
         elif menu_choice.upper() == 'C':
             updated_feeds, bad_feeds, myFeeds = find_all_changes(myFeeds)
             myFeeds, updated_feeds, titles_read = list_updated_feeds(
                 myFeeds, updated_feeds, titles_read, bad_feeds)
+
         elif menu_choice.upper() == 'D':
             myFeeds = del_feed(myFeeds)
+
         elif menu_choice.upper() == 'E':
             pass
+
         elif menu_choice.upper() == 'I':
             err, myFeeds = import_OPML(myFeeds)
             if err:
                 print('Import failed or aborted.')
             else:
                 print('OPML file successfully imported.')
+
+        elif menu_choice.upper() == 'M':
+            myFeeds = move_feed(myFeeds)
+
         elif menu_choice.upper() == 'X':
             pass
+
         else:
             print('*'*35)
             print('Enter a valid menu choice.')
@@ -1147,8 +1220,6 @@ def main():
         # -- 7: link to last entry posted on website
     myFeeds = load_myFeeds_dict()
 
-    myFeeds = clean_feeds(myFeeds)
-
     # display menu on screen
     myFeeds, titles_read = main_menu(myFeeds, titles_read)
 
@@ -1166,8 +1237,8 @@ def main():
 
 if __name__ == '__main__':
 
-    get_revision_number()
-    version_num = '0.1 rev13'
+    # get_revision_number()
+    version_num = '1.0 rev17'
     print('ida ' + version_num[0:3] + ' - a small news feed reader')
 
     main()
