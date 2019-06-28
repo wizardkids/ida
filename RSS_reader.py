@@ -50,8 +50,6 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
-# todo -- move_feed() has a bug, where if there are no feeds in "Default", the numbering of subsequent feeds is incorrect
-
 # todo -- need a utility to delete a group, or edit its name
 
 # todo -- modify functions so that error messages are posted right above input() statements so that the user can easily notice them.
@@ -296,6 +294,7 @@ def add_feed(myFeeds):
         # -- 6: hash of last entry posted on website (blank)
         # -- 7: link to last entry posted on website (blank)
     """
+    err = ''
     print()
     # enter a URL, find the feed address, parse the feed
     f = input('Website address: ')
@@ -319,8 +318,8 @@ def add_feed(myFeeds):
         if not result:
             result = feed_xml(f)
     except:
-        print('='*30, '\nDid you forget "http://"?\n', '='*30, '\n', sep='')
-        return myFeeds
+        err = 'Did you forget "http://"?'
+        return myFeeds, err
 
     rss_address = ''
     if isinstance(result, list):
@@ -340,7 +339,7 @@ def add_feed(myFeeds):
         if not rss_address or not feed['entries']:
             print('='*30, '\nBad RSS address or no address found.\n',
                   '='*30, '\n', sep='')
-            return myFeeds
+            return myFeeds, err
 
     # add info into [new_feed]
     # https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw
@@ -416,7 +415,7 @@ def add_feed(myFeeds):
 
     save_myFeeds(myFeeds)
 
-    return myFeeds
+    return myFeeds, err
 
 
 def move_feed(myFeeds):
@@ -525,7 +524,8 @@ def del_feed(myFeeds):
     """
     Delete a feed.
     """
-
+    err = ''
+    
     # generate a list of feed names
     cnt, feed_names=0, []
     for k, v in myFeeds.items():
@@ -543,14 +543,14 @@ def del_feed(myFeeds):
         try:
             f=int(f)
             if f < 1 or f > cnt:
-                print('='*30, '\nEnter an integer between 1 and ',
-                      cnt, '.\n', '='*30, sep = '')
+                print('\n', '='*30, '\nEnter an integer between 1 and ',
+                      cnt, '.\n', '='*30, '\n', sep = '')
                 continue
             else:
                 break
         except ValueError:
-            print('='*30, '\nEnter an integer between 1 and ',
-                  cnt, '.\n', '='*30, sep='')
+            print('\n', '='*30, '\nEnter an integer between 1 and ',
+                  cnt, '.\n', '='*30, '\n', sep='')
             continue
 
     # find that name in {myFeeds} and set title to ''
@@ -850,14 +850,14 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
             try:
                 choice = int(choice)
                 if choice < 1 or choice > len(updated_feeds):
-                    print('='*30, '\nEnter an integer between 1 and ',
-                          len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
+                    print('\n', '='*30, '\nEnter an integer between 1 and ',
+                          len(updated_feeds), '\n', '='*30, '\n', sep='')
                     continue
                 else:
                     break
             except ValueError:
-                print('='*30, '\nEnter an integer between 1 and ',
-                      len(updated_feeds), '\n', '='*30, '\n', end='', sep='')
+                print('\n', '='*30, '\nEnter an integer between 1 and ',
+                      len(updated_feeds), '\n', '='*30, '\n', sep='')
                 continue
 
         if not choice:
@@ -932,12 +932,12 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                         if post + 2 < 3 or post + 3 > len(chosen_feed):
                             err = '='*30 + '\nEnter an integer between 1 and ' + \
                                 str(len(chosen_feed)-3) + \
-                                ' or a menu item\n' + '='*30 + '\n'
+                                '\nor a menu item.\n' + '='*30 + '\n'
                             continue
                     except ValueError:
                         err = '='*30 + '\nEnter an integer between 1 and ' + \
                             str(len(chosen_feed)-3) + \
-                            ' or a menu item\n' + '='*30 + '\n'
+                            '\nor a menu item.\n' + '='*30 + '\n'
                         continue
 
                     if post:
@@ -1129,7 +1129,7 @@ def get_revision_number():
     tday = datetime.today()
     revision_delta = datetime.today() - start_date
 
-    print("\nREVISION NUMBER:", revision_delta.days)
+    print('\nREVISION NUMBER:', revision_delta.days)
     print('This is the number of days since ', start_date, '\n',
           'the date that the first version of "ida" was launched.\n\n', sep='')
     return None
@@ -1172,7 +1172,7 @@ def load_myFeeds_dict():
 
 # === MAIN MENU ================
 
-def main_menu(myFeeds, titles_read):
+def main_menu(myFeeds, titles_read, err):
     """
     Print the main menu on the screen and direct the user's choice.
     """
@@ -1184,6 +1184,9 @@ def main_menu(myFeeds, titles_read):
     # 'e<x>port feeds '
 
     while True:
+        if err:
+            print('\n', '='*30, '\n', err, '\n', '='*30, sep='')
+
         print()
         for i in range(0, len(menu), 3):
             m = ''.join(menu[i:i+3])
@@ -1197,7 +1200,7 @@ def main_menu(myFeeds, titles_read):
             break
 
         elif menu_choice.upper() == 'A':
-            myFeeds = add_feed(myFeeds)
+            myFeeds, err = add_feed(myFeeds)
 
         elif menu_choice.upper() == 'B':
             about()
@@ -1260,7 +1263,8 @@ def main():
     myFeeds = load_myFeeds_dict()
 
     # display menu on screen
-    myFeeds, titles_read = main_menu(myFeeds, titles_read)
+    err = ''
+    myFeeds, titles_read = main_menu(myFeeds, titles_read, err)
 
     # before quitting the app save [titles_read] and {myFeeds}
     titles_read_set = set(titles_read)

@@ -82,3 +82,4 @@
     -- fix move_feed() so it works correctly
     -- add removal of blank feeds in {myFeeds} in clean_feeds()
     -- add save_myFeeds() because several functions access this ability
+    -- modify functions so that error messages are posted right above input() statements so that the user can easily notice them
