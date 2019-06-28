@@ -50,6 +50,8 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
+# todo -- move_feed() has a bug, where if there are no feeds in "Default", the numbering of subsequent feeds is incorrect
+
 # todo -- need a utility to delete a group, or edit its name
 
 # todo -- modify functions so that error messages are posted right above input() statements so that the user can easily notice them.
@@ -201,7 +203,7 @@ def import_OPML(myFeeds):
                             """, re.X)
 
             # put Group, title, and RSS in {myFeeds}
-            myFeeds = {'Default': []}
+            myFeeds = {'Default': [[]]}
             for ndx, line in enumerate(feedly):
                 m_Feed_Group = re.search(rem_Feed_Group, line)
                 m_Feed_Title = re.search(rem_title, line)
@@ -375,7 +377,7 @@ def add_feed(myFeeds):
     print()
 
     while True:
-        grp_name = input('Add new feed to which group (or enter new group)? ')
+        grp_name = input('Add feed to which group number (or enter new group name)? ')
         if not grp_name:
             grp_name = 0
             break
@@ -412,6 +414,8 @@ def add_feed(myFeeds):
 
     myFeeds = clean_feeds(myFeeds)
 
+    save_myFeeds(myFeeds)
+
     return myFeeds
 
 
@@ -426,10 +430,18 @@ def move_feed(myFeeds):
         for k, v in myFeeds.items():
             print(k, sep='')
             grp_cnt += 1
-            for i in v:
-                feed_cnt += 1
-                feed_list.append(i)
-                print('   ', feed_cnt, ': ', i[0], sep='')
+            # in case a group has no feeds
+            try:
+                for i in v:
+                    if i:
+                        feed_cnt += 1
+                        feed_list.append(i)
+                        try:
+                            print('   ', feed_cnt, ': ', i[0], sep='')
+                        except:
+                            pass
+            except:
+                pass
         
         print()
         # enter the number of the feed to move
@@ -440,12 +452,18 @@ def move_feed(myFeeds):
             # find the feed in {myFeeds}
             this_feed = ''
             for k, v in myFeeds.items():
-                for ndx, i in enumerate(v):
-                    if i[0] == feed_name:
-                        this_feed = i
-                        v.pop(ndx)
+                if not v:
+                    continue
+                # in case group holds no feeds
+                try:
+                    for ndx, i in enumerate(v):
+                        if i[0] == feed_name:
+                            this_feed = i
+                            v.pop(ndx)
+                        if this_feed: break
                     if this_feed: break
-                if this_feed: break
+                except:
+                    pass
         except:
             break
 
@@ -466,6 +484,8 @@ def move_feed(myFeeds):
             break
         break
 
+    myFeeds = clean_feeds(myFeeds)  # clean_feeds() also saves {myFeeds}
+
     return myFeeds
 
 
@@ -474,11 +494,20 @@ def clean_feeds(myFeeds):
     Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes
     a feed: del_feed() sets the title to ''
     """
-    # delete any feed with no title
-    for k, v in myFeeds.items():
-        for ndx, i in enumerate(v):
-            if not i[0]:
-                v.pop(ndx)
+    # delete any feed with no title or any "feed" that is blank (e.g. "LifeHacker": [[]])
+    try:
+        for k, v in myFeeds.items():
+            for ndx, i in enumerate(v):
+                if not v:
+                    v.pop(ndx)
+                    continue
+                if i:
+                    if not i[0]:
+                        v.pop(ndx)
+                else:
+                    v.pop(ndx)
+    except:
+        pass
 
     # delete any duplicate feeds
     feed_urls = []
@@ -486,6 +515,8 @@ def clean_feeds(myFeeds):
         feed_tuples = set(tuple(x) for x in v)
         feed_list = [list(item) for item in feed_tuples]
         myFeeds.update({k: feed_list})
+
+    save_myFeeds(myFeeds)
 
     return myFeeds
 
@@ -535,7 +566,7 @@ def del_feed(myFeeds):
 
     myFeeds = clean_feeds(myFeeds)
 
-    print()
+    save_myFeeds(myFeeds)
 
     return myFeeds
 
@@ -635,6 +666,17 @@ def findfeed(site):
                 result.append(url)
 
     return result
+
+
+def save_myFeeds(myFeeds):
+    """
+    Utility to save {myFeeds} to a file (myFeeds.json). 
+    """
+    
+    with open('myFeeds.json', 'w+') as file:
+        file.write(json.dumps(myFeeds, ensure_ascii=False))
+    
+    return None
 
 
 # === CHECK FEEDS FOR UPDATES ================
@@ -1226,8 +1268,7 @@ def main():
         for i in titles_read_set:
             file.write(i + '\n')
 
-    with open('myFeeds.json', 'w+') as file:
-        file.write(json.dumps(myFeeds, ensure_ascii=False))
+    save_myFeeds(myFeeds)
 
     return
 
