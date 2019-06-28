@@ -52,8 +52,6 @@ from bs4 import BeautifulSoup as bs4
 
 # todo -- need a utility to delete a group, or edit its name
 
-# todo -- modify functions so that error messages are posted right above input() statements so that the user can easily notice them.
-
 
 # === DEVELOPER UTILITY FUNCTIONS ================
 
@@ -843,8 +841,17 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
             f = input('Press <ENTER> to continue...')
             break
 
+        # list all the feeds, by group
+        group, cnt = '', 0
         for ndx, i in enumerate(updated_feeds):
-            print(ndx+1, '. ', i[0], sep='')
+            # find this feed's group in {myFeed} but only print it on screen once for each set of feeds
+            for k, v in myFeeds.items():
+                for feed in v:
+                    if (i[0] in feed) and (k != group):
+                        print(k)
+                        continue
+            print('   ', cnt+1, '. ', i[0], sep='')
+            cnt += 1
         print()
 
         while True:
