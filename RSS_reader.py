@@ -210,7 +210,7 @@ def import_OPML(myFeeds):
                 if m_HTML:
                     this_URL = m_HTML.group('URL')[:-1]  # deletes the final "
                     # check to see if this is a valid URL
-                    print('Checking validity of:', this_URL)
+                    print('Checking if link is valid:', this_URL)
                     status_code = get_url_status(this_URL)
                     if status_code != 200:
                         continue
@@ -253,6 +253,8 @@ def import_OPML(myFeeds):
     else:
         print('Aborted.')
         err = True
+
+    myFeeds = clean_feeds(myFeeds)
 
     return err, myFeeds
 
@@ -687,10 +689,12 @@ def find_all_changes(myFeeds):
     """
     rss_list, updated_feeds, bad_feeds = [], [], []
 
-    # not used unless you uncomment lines of code below
+    # following lists are not used unless you uncomment lines of code below
     # other_feeds, unchanged_feeds = [], []
     # site_200, site_301, site_302, site_303 = [], [], [], []
     # site_403, site_410 = [], []
+
+    print('\nChecking RSS feeds for updates...\nthis may take a few minutes.\n', sep='')
 
     # iterate through {myFeeds} and get each RSS feed
     for group in myFeeds.values():
@@ -941,19 +945,23 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                         continue
 
                     if post:
-                        print('showing', chosen_feed[post+2][0])
+                        print('Showing...', chosen_feed[post+2][0])
                         # show_lastest_rss(chosen_feed[post+2][1])
                         current_link = hash_a_string(chosen_feed[post+2][1])
                         titles_read.append(current_link)
                         for k, v in myFeeds.items():
                             for feed in v:
-                                if feed[0] == chosen_feed[0]:
-                                    try:
-                                        feed[6] = hash_a_string(current_link)
-                                        # feed[7] = feed_update['entries'][0]['link']
-                                    except:
-                                        pass
-                                    break
+                                # in case the "feed" is empty
+                                try:
+                                    if feed[0] == chosen_feed[0]:
+                                        try:
+                                            feed[6] = hash_a_string(current_link)
+                                            # feed[7] = feed_update['entries'][0]['link']
+                                        except:
+                                            pass
+                                        break
+                                except:
+                                    pass
                     else:
                         break
 
