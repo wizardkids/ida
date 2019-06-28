@@ -81,3 +81,4 @@
 2019-06-28
     -- fix move_feed() so it works correctly
     -- add removal of blank feeds in {myFeeds} in clean_feeds()
+    -- add save_myFeeds() because several functions access this ability
