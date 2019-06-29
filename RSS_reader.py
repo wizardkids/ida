@@ -60,6 +60,9 @@ def get_feed_info(rss):
     Utility function to print information about a news feed. USED ONLY BY THE DEVELOPER.
     """
 
+    if not rss:
+        rss = input("RSS address: ")
+
     try:
         newsfeed = feedparser.parse(rss)
         # entries is the only dict in [newsfeed_keys]
@@ -127,9 +130,25 @@ def get_feed_info(rss):
     return
 
 
+def list_my_feeds(myFeeds):
+    """
+    Generate a list of feeds. USED ONLY BY THE DEVELOPER.
+    """
+    print()
+    for k, v in myFeeds.items():
+        print(k)
+        # try, in case there are no feeds for a given group
+        try:
+            for i in v:
+                if i[0]:
+                    print('   ', i[0], sep='')
+        except:
+            pass
+
+
 def print_all_functions():
     """
-    Print all the functions, with their docStrings, used in this program. USED ONLY BY THE DEVELOPER
+    Print all the functions, with their docStrings, used in this program. USED ONLY BY THE DEVELOPER.
     """
     module_functions = []
 
@@ -167,17 +186,17 @@ def import_OPML(myFeeds):
 
     Output: {myFeeds} is written to myFeeds.json.
     """
-    file = input('Name of OPML file to import: ')
-    # file = 'feedly.opml'
 
     while True:
+        print()
+        file = input('Name of OPML file to import: ')
         if file:
             try:
                 with open(file, 'r') as f:
                     feedly = f.readlines()
             except FileNotFoundError:
-                print('\n', file, ' not found.\n')
-                continue
+                err = file + ' not found.'
+                return err, myFeeds
 
             # extract group name from line
             rem_Feed_Group = re.compile(r"""
@@ -234,8 +253,8 @@ def import_OPML(myFeeds):
                     myFeeds.update({this_group: current_feed})
             break
         else:
-            print('Aborted.')
-            return True, myFeeds
+            err = 'Aborted.'
+            return err, myFeeds
 
     for k, v in myFeeds.items():
         print('\n', k, sep='')
@@ -247,10 +266,9 @@ def import_OPML(myFeeds):
     if r.upper() == 'YES':
         with open('myFeeds.json', 'w+') as file:
             file.write(json.dumps(myFeeds, ensure_ascii=False))
-        err = False
+        err = ''
     else:
-        print('Aborted.')
-        err = True
+        err = 'Aborted.'
 
     myFeeds = clean_feeds(myFeeds)
 
@@ -418,76 +436,6 @@ def add_feed(myFeeds):
     return myFeeds, err
 
 
-def move_feed(myFeeds):
-    """
-    Move a feed to a different group.
-    """
-    while True:
-        # list feeds, by group, numbering the feeds
-        feed_cnt, grp_cnt, feed_list = 0, 0, []
-
-        for k, v in myFeeds.items():
-            print(k, sep='')
-            grp_cnt += 1
-            # in case a group has no feeds
-            try:
-                for i in v:
-                    if i:
-                        feed_cnt += 1
-                        feed_list.append(i)
-                        try:
-                            print('   ', feed_cnt, ': ', i[0], sep='')
-                        except:
-                            pass
-            except:
-                pass
-        
-        print()
-        # enter the number of the feed to move
-        feed_num = input('Number of feed to move: ')
-        try:
-            feed_num = int(feed_num)
-            feed_name = feed_list[feed_num-1][0]
-            # find the feed in {myFeeds}
-            this_feed = ''
-            for k, v in myFeeds.items():
-                if not v:
-                    continue
-                # in case group holds no feeds
-                try:
-                    for ndx, i in enumerate(v):
-                        if i[0] == feed_name:
-                            this_feed = i
-                            v.pop(ndx)
-                        if this_feed: break
-                    if this_feed: break
-                except:
-                    pass
-        except:
-            break
-
-        # enter the name of the group to receive the moving feed
-        group_name = input("Enter name of group receiving feed: ").strip()
-        done = False
-        try:  
-            # find the group in {myFeeds}
-            for k, v in myFeeds.items():
-                if k.upper() == group_name.upper():
-                    v.append(this_feed)
-                    done = True
-                    break
-            # in case user entered a garbage group, feed is moved to "Default" group
-            if not done:
-                myFeeds['Default'].append(this_feed)
-        except:
-            break
-        break
-
-    myFeeds = clean_feeds(myFeeds)  # clean_feeds() also saves {myFeeds}
-
-    return myFeeds
-
-
 def clean_feeds(myFeeds):
     """
     Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes
@@ -525,37 +473,46 @@ def del_feed(myFeeds):
     Delete a feed.
     """
     err = ''
-    
+    feed_list, feed_cnt, grp_cnt = [], 0, 0
     # generate a list of feed names
-    cnt, feed_names=0, []
     for k, v in myFeeds.items():
-        for i in v:
-            cnt += 1
-            feed_names.append(i[0])
-            print(cnt, '. ', i[0], sep = '')
+        print(k, sep='')
+        grp_cnt += 1
+        # in case a group has no feeds
+        try:
+            for i in v:
+                if i:
+                    feed_cnt += 1
+                    feed_list.append(i)
+                    try:
+                        print('   ', feed_cnt, ': ', i[0], sep='')
+                    except:
+                        pass
+        except:
+            pass
 
     print()
     # get the name of the feed to delete
     while True:
-        f=input('Number of feed to delete: ').lower()
+        f=input('Number of feed to delete: ')
         if not f:
             break
         try:
             f=int(f)
-            if f < 1 or f > cnt:
+            if f < 1 or f > feed_cnt:
                 print('\n', '='*30, '\nEnter an integer between 1 and ',
-                      cnt, '.\n', '='*30, '\n', sep = '')
+                      feed_cnt, '.\n', '='*30, '\n', sep='')
                 continue
             else:
                 break
         except ValueError:
             print('\n', '='*30, '\nEnter an integer between 1 and ',
-                  cnt, '.\n', '='*30, '\n', sep='')
+                  feed_cnt, '.\n', '='*30, '\n', sep='')
             continue
 
     # find that name in {myFeeds} and set title to ''
     if f:
-        this_feed = feed_names[f-1]
+        this_feed = feed_list[f-1][0]
         for k, v in myFeeds.items():
             for i in v:
                 if i[0] == this_feed:
@@ -569,13 +526,6 @@ def del_feed(myFeeds):
     save_myFeeds(myFeeds)
 
     return myFeeds
-
-
-def edit_group(myFeeds):
-    """
-    Edit the name of a group.
-    """
-    pass
 
 
 def feed_xml(f):
@@ -608,27 +558,6 @@ def feedburner_rss(f):
         result = ''
 
     return result
-
-
-def youtube_rss(f):
-    """
-    Find the feed for a youtube channel (not a single video!).
-
-    
-    """
-    rem = re.compile("""
-            (.*channel/)(?P<yt_channel>.*)"""
-            , re.X)
-
-    m_RSS = re.search(rem, f)
-    if m_RSS:
-        this_channel = m_RSS.group('yt_channel')
-    else:
-        this_channel = ''
-
-    this_RSS = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + this_channel
-
-    return this_RSS
 
 
 def findfeed(site):
@@ -666,6 +595,161 @@ def findfeed(site):
                 result.append(url)
 
     return result
+
+
+def move_feed(myFeeds):
+    """
+    Move a feed to a different group.
+    """
+    while True:
+        # list feeds, by group, numbering the feeds
+        feed_cnt, grp_cnt, feed_list = 0, 0, []
+
+        for k, v in myFeeds.items():
+            print(k, sep='')
+            grp_cnt += 1
+            # in case a group has no feeds
+            try:
+                for i in v:
+                    if i:
+                        feed_cnt += 1
+                        feed_list.append(i)
+                        try:
+                            print('   ', feed_cnt, ': ', i[0], sep='')
+                        except:
+                            pass
+            except:
+                pass
+
+        print()
+        # enter the number of the feed to move
+        feed_num = input('Number of feed to move: ')
+        try:
+            feed_num = int(feed_num)
+            feed_name = feed_list[feed_num-1][0]
+            # find the feed in {myFeeds}
+            this_feed = ''
+            for k, v in myFeeds.items():
+                if not v:
+                    continue
+                # in case group holds no feeds
+                try:
+                    for ndx, i in enumerate(v):
+                        if i[0] == feed_name:
+                            this_feed = i
+                            v.pop(ndx)
+                        if this_feed:
+                            break
+                    if this_feed:
+                        break
+                except:
+                    pass
+        except:
+            break
+
+        # enter the name of the group to receive the moving feed
+        group_name = input("Enter name of group receiving feed: ").strip()
+        done = False
+        try:
+            # find the group in {myFeeds}
+            for k, v in myFeeds.items():
+                if k.upper() == group_name.upper():
+                    v.append(this_feed)
+                    done = True
+                    break
+            # in case user entered a garbage group, feed is moved to "Default" group
+            if not done:
+                myFeeds['Default'].append(this_feed)
+        except:
+            break
+        break
+
+    myFeeds = clean_feeds(myFeeds)  # clean_feeds() also saves {myFeeds}
+
+    return myFeeds
+
+
+def rename_group(myFeeds):
+    """
+    Rename a group.
+    """
+    my_keys = []
+    for ndx, k in enumerate(myFeeds.keys()):
+        print(ndx+1, ': ', k, sep='')
+        my_keys.append(k)
+    print()
+
+    while True:
+        ren = input("Number of group to rename or delete: ")
+        if not ren:
+            return myFeeds
+        try:
+            ren = int(ren)
+            if ren == 1:
+                print('\n', '='*30, '\nCannot rename or delete "Default" group', '\n', '='*30, '\n', sep='')
+                continue
+            elif (ren < 2) or (ren > len(myFeeds.keys())):
+                print('\n', '='*30, '\nEnter an integer between 1 and ', len(myFeeds.keys()), '\n', '='*30, '\n', sep='')
+                continue
+            else:
+                break
+        except:
+            print('\n', '='*30, '\nEnter an integer between 1 and ',
+                  len(myFeeds.keys()), '\n', '='*30, '\n', sep='')
+         
+    this_feed = my_keys[ren-1]
+
+    while True:
+        new_name = input('Edited name (or <enter> to delete): ')
+        for i in my_keys:
+            if new_name.upper() == i.upper():
+                print('That feed already exists.')
+            continue
+        else:
+            break
+
+    if not new_name:
+        if myFeeds[this_feed]:
+            print('\n', '='*30, '\nDelete all feeds in this group first.\n', '='*30, '\n', sep='')
+            y = ''
+        else:
+            y = input('Delete this group? (Y/N) ').upper()
+            if y == 'Y':
+                y = 'D'
+            else:
+                y = ''
+    else:
+        y = input('Change ' + this_feed + ' to ' + new_name + '? (Y/N) ')
+
+    if y.upper() == 'Y':
+        myFeeds[new_name] = myFeeds.pop(this_feed)
+    elif y.upper() == 'D':
+        myFeeds.pop(this_feed)
+    else:
+        pass
+
+    return myFeeds
+
+
+def youtube_rss(f):
+    """
+    Find the feed for a youtube channel (not a single video!).
+
+    
+    """
+    rem = re.compile("""
+            (.*channel/)(?P<yt_channel>.*)"""
+            , re.X)
+
+    m_RSS = re.search(rem, f)
+    if m_RSS:
+        this_channel = m_RSS.group('yt_channel')
+    else:
+        this_channel = ''
+
+    this_RSS = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + this_channel
+
+    return this_RSS
 
 
 def save_myFeeds(myFeeds):
@@ -841,17 +925,24 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
             f = input('Press <ENTER> to continue...')
             break
 
-        # list all the feeds, by group
-        group, cnt = '', 0
-        for ndx, i in enumerate(updated_feeds):
-            # find this feed's group in {myFeed} but only print it on screen once for each set of feeds
-            for k, v in myFeeds.items():
-                for feed in v:
-                    if (i[0] in feed) and (k != group):
-                        print(k)
-                        continue
-            print('   ', cnt+1, '. ', i[0], sep='')
-            cnt += 1
+        # list feeds, by group, numbering the feeds
+        feed_cnt, grp_cnt, feed_list = 0, 0, []
+        for k, v in myFeeds.items():
+            print(k, sep='')
+            grp_cnt += 1
+            # in case a group has no feeds
+            try:
+                for i in v:
+                    if i:
+                        feed_cnt += 1
+                        feed_list.append(i)
+                        try:
+                            print('   ', feed_cnt, ': ', i[0], sep='')
+                        except:
+                            pass
+            except:
+                pass
+
         print()
 
         while True:
@@ -860,7 +951,7 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 break
             try:
                 choice = int(choice)
-                if choice < 1 or choice > len(updated_feeds):
+                if choice < 1 or choice > feed_cnt:
                     print('\n', '='*30, '\nEnter an integer between 1 and ',
                           len(updated_feeds), '\n', '='*30, '\n', sep='')
                     continue
@@ -921,6 +1012,7 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 ]
                 for i in range(len(post_menu)):
                     print(post_menu[i])
+                print()
 
                 # get a specific article from this feed
                 post = input(
@@ -1109,17 +1201,19 @@ def show_lastest_rss(rss):
 
 # === STARTUP AND MISCELLANEOUS FUNCTIONS ================
 
-def about():
+def about(version_num):
     """
     Information about the author and product.
     """
     print('='*45)
+    revision_number = get_revision_number()
 
-    txt1 = 'ida - a small news feed reader\n' + 'version: ' + \
-        version_num[0:18] + '\n' + \
-        ' python: v3.7\n' + ' author: Richard E. Rawson\n\n'
+    txt1 = 'ida - a small news feed reader\n' + ' version: ' + str(version_num) + '\n' + \
+        'revision: ' + str(revision_number) + '\n' + \
+        '  python: v3.7\n' + '  author: Richard E. Rawson\n\n'
 
     txt2 = 'ida is named after Ida B. Wells (July 16, 1862 to March 25, 1931), was an African-American journalist, abolitionist and feminist who led an anti-lynching crusade in the United States in the 1890s. She went on to found and become integral in groups striving for African-American justice.'
+
 
     print('\n'.join([fold(txt1) for txt1 in txt1.splitlines()]))
     print('\n'.join([fold(txt2) for txt2 in txt2.splitlines()]))
@@ -1133,21 +1227,6 @@ def fold(txt):
     Utility function that textwraps 'txt' 45 characters wide.
     """
     return textwrap.fill(txt, width=45)
-
-
-def get_revision_number():
-    """
-    Manually run this function to get a revision number by uncommenting the first line of code under "if __name__ == '__main__':"
-    """
-
-    start_date = datetime(2019, 6, 10)
-    tday = datetime.today()
-    revision_delta = datetime.today() - start_date
-
-    print('\nREVISION NUMBER:', revision_delta.days)
-    print('This is the number of days since ', start_date, '\n',
-          'the date that the first version of "ida" was launched.\n\n', sep='')
-    return None
 
 
 def hash_a_string(this_string):
@@ -1193,7 +1272,7 @@ def main_menu(myFeeds, titles_read, err):
     """
     menu = (
         '<c>heck feeds  ', '<a>dd feed     ', '<d>elete feed  ',
-        '<m>ove feed    ', '               ', '               ',
+        '<m>ove feed    ', '<e>dit group ', '               ',
         '<i>mport OPML  ', 'a<b>out        ', '<q>uit         ',
     )
     # 'e<x>port feeds '
@@ -1218,7 +1297,7 @@ def main_menu(myFeeds, titles_read, err):
             myFeeds, err = add_feed(myFeeds)
 
         elif menu_choice.upper() == 'B':
-            about()
+            about(version_num)
 
         elif menu_choice.upper() == 'C':
             updated_feeds, bad_feeds, myFeeds = find_all_changes(myFeeds)
@@ -1229,7 +1308,10 @@ def main_menu(myFeeds, titles_read, err):
             myFeeds = del_feed(myFeeds)
 
         elif menu_choice.upper() == 'E':
-            pass
+            myFeeds = rename_group(myFeeds)
+
+        elif menu_choice.upper() == 'G':
+            get_feed_info('')
 
         elif menu_choice.upper() == 'I':
             err, myFeeds = import_OPML(myFeeds)
@@ -1237,6 +1319,9 @@ def main_menu(myFeeds, titles_read, err):
                 print('Import failed or aborted.')
             else:
                 print('OPML file successfully imported.')
+
+        elif menu_choice.upper() == 'L':
+            list_my_feeds(myFeeds)
 
         elif menu_choice.upper() == 'M':
             myFeeds = move_feed(myFeeds)
@@ -1292,11 +1377,23 @@ def main():
     return
 
 
+def get_revision_number():
+    """
+    Returns the revision number, which is the number of days since the initial coding of "ida" began on June, 10, 2019.
+    """
+
+    start_date = datetime(2019, 6, 10)
+    tday = datetime.today()
+    revision_delta = datetime.today() - start_date
+
+    return revision_delta.days
+
+
 if __name__ == '__main__':
 
-    # get_revision_number()
-    version_num = '1.0 rev17'
-    print('ida ' + version_num[0:3] + ' - a small news feed reader')
+    version_num = '1.0'
+    revision_number = get_revision_number()
+    print('ida ' + version_num + ' - a small news feed reader')
 
     main()
 
