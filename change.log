@@ -100,3 +100,4 @@
         -- so it is more efficient
         -- to update item #5 in {myFeeds} if a feed has changed; this is used in list_updated_feeds() to flag updated feeds
     -- modify list_updated_feeds() so it flags not only updated feeds, but posts that have not been read, yet
+    -- fixed set_post_to_unread() and set_post_to_read() so they work properly

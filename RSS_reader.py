@@ -52,11 +52,9 @@ from bs4 import BeautifulSoup as bs4
 
 # // -- need a utility to delete a group, or edit its name
 
-# todo -- figure out how to record the last post by a feed so that when you check next time, you can flag (with a "*") feeds that have been updated. 
-    # ! -- rss_feed now contains a boolean for updated/not-updated in get_feed_status()
-    # -- In other words, list_updated_feeds() should list ALL feeds but with "*" next to those that have an update since the last time you did an update.
-    # -- Since get_feed_status() checks all feeds, and since list_updated_feeds() lists all feeds, user can read any post on a feed.
-    # -- The "*" in front of a feed, though, will tell the user which feeds have NEW posts.
+# // -- figure out how to record the last post by a feed so that when you check next time, you can flag (with a "*") feeds that have been updated. 
+
+# todo -- setting a post to "unread" doesn't work 
 
 
 # === DEVELOPER UTILITY FUNCTIONS ================
@@ -123,12 +121,20 @@ def get_feed_info(rss):
         except:
             print('\nNo updated datetime.')
         try:
-            print('\nLatest article posted:')
+            print('\nLatest articleposted:')
             print(newsfeed['entries'][0]['title'])
             print(newsfeed['entries'][0]['link'])
-
         except:
             print('\nNo entry link found.')
+
+        g = input('List all entries? (Y/N) ').upper()
+        if g == 'Y':
+            try:
+                print('\nAll articles returned by feedparser():')
+                for i in range(len(newsfeed['entries'])):
+                    print(newsfeed['entries'][i]['title'])
+            except:
+                print('\nNo entries found.')
 
     except IndexError:
         print('Oops. Encountered an error!')
@@ -1017,11 +1023,9 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                     if post == 't':
                         show_read = toggle_show_read_articles(show_read)
                     elif post == 'u':
-                        titles_read = set_post_to_unread(
-                            titles_read, chosen_feed)
+                        titles_read = set_post_to_unread(titles_read, chosen_feed)
                     elif post == 'r':
-                        titles_read = set_post_to_read(
-                            titles_read, chosen_feed)
+                        titles_read = set_post_to_read(titles_read, chosen_feed)
                 else:
                     try:
                         post = int(post)
@@ -1099,19 +1103,21 @@ def set_post_to_unread(titles_read, chosen_feed):
                 print('='*30, '\nEnter a range of integers separated by a hyphen.\n', '='*30, sep='')
                 return titles_read
             for i in range(start_num, end_num):
-                titles_read = unread_one_article(i, chosen_feed, titles_read)
+                titles_read = set_to_unread_one_article(
+                    i, chosen_feed, titles_read)
             break
         else:
             try:
                 article_number = int(article_number)
             except:
                 print('='*30, '\nEnter an integer between 1 and ', \
-                    len(chosen_feed)-3, '\n', '='*30, '\n', sep='', end='')
+                    len(chosen_feed)-2, '\n', '='*30, '\n', sep='', end='')
                 continue
             if not article_number:
                 break
             else:
-                titles_read = unread_one_article(article_number, chosen_feed, titles_read)
+                titles_read = set_to_unread_one_article(
+                    article_number, chosen_feed, titles_read)
                 break
     return titles_read
 
@@ -1142,12 +1148,12 @@ def set_post_to_read(titles_read, chosen_feed):
                 article_number = int(article_number)
             except:
                 print('='*30, '\nEnter an integer between 1 and ',
-                      len(chosen_feed)-3, '\n', '='*30, '\n', sep='', end='')
+                      len(chosen_feed)-2, '\n', '='*30, '\n', sep='', end='')
                 continue
             if not article_number:
                 break
             else:
-                titles_read = unread_one_article(
+                titles_read = set_to_read_one_article(
                     article_number, chosen_feed, titles_read)
                 break
     return titles_read
@@ -1157,9 +1163,9 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
     """
     Utility function to set one article in a feed to 'read'.
     """
-    title = hash_a_string(chosen_feed[article_number+2][1])
+    link = hash_a_string(chosen_feed[article_number+1][1])
 
-    titles_read.append(title)
+    titles_read.append(link)
     # strip out repeat titles
     titles_read = list(set(titles_read))
     print()
@@ -1167,22 +1173,22 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
     return titles_read
 
 
-def unread_one_article(article_number, chosen_feed, titles_read):
+def set_to_unread_one_article(article_number, chosen_feed, titles_read):
     """
     Utility function to unread one article in a feed.
     """
     try:
-        title = hash_a_string(chosen_feed[article_number+2][1])
+        link = hash_a_string(chosen_feed[article_number+1][1])
     # in case user chose a title that is unread...
         try:
-            ndx = titles_read.index(title)
+            ndx = titles_read.index(link)
             titles_read.pop(ndx)
         except:
             print('='*30, '\nTitle is already marked unread.\n',
                     '='*30, '\n', sep='', end='')
     except:
         print('='*30, '\nEnter an integer between 1 and ',
-              len(chosen_feed)-3, '\n', '='*30, '\n',  sep='', end='')
+              len(chosen_feed)-2, '\n', '='*30, '\n',  sep='', end='')
 
     return titles_read
 
