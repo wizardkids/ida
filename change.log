@@ -102,3 +102,4 @@
     -- modify list_updated_feeds() so it flags not only updated feeds, but posts that have not been read, yet
     -- fixed set_post_to_unread() and set_post_to_read() so they work properly
     -- added menu option to access list_my_feeds()
+    -- fix list_my_feeds() so that it has a lot of the same functions as list_updated_feeds()

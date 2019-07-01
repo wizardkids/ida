@@ -958,7 +958,8 @@ def list_updated_feeds(myFeeds, updated_feeds, titles_read, bad_feeds):
                 if cnt_unread_articles == 0:
                     print('\n', '='*30, '\nAll articles have been read.\n',
                           '='*30, '\n', sep='', end='')
-                    m = input('\nUnread some articles from this feed? (Y/N) ').lower()
+                    m = input('\nUn-read some articles from this feed? (Y/N) ').lower()
+                    print()
                     if m == 'y':
                         titles_read = set_post_to_unread(titles_read, chosen_feed)
                     break
@@ -1222,10 +1223,13 @@ def hash_a_string(this_string):
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
 
-def list_my_feeds(myFeeds):
+def list_my_feeds(myFeeds, titles_read):
     """
     Generate a list of feeds.
     """
+    # default for article list is to show only unread articles
+    show_read = 'read'
+
     print()
     # list feeds, by group, numbering the feeds and flagging updated feeds
     feed_cnt, grp_cnt, feed_list = 0, 0, []
@@ -1247,6 +1251,74 @@ def list_my_feeds(myFeeds):
                         pass
         except:
             pass
+
+    while True:
+        print()
+        g = input('Show articles for which feed? ')
+        if not g:
+            break
+        rss_address = ''
+        try:
+            g = int(g)
+            f = feed_list[g-1]
+            for k, v in myFeeds.items():
+                for i in v:
+                    if i[0] == f[0]:
+                        rss_address = i[1]
+                        break
+                if rss_address:
+                    break
+            feed = feedparser.parse(rss_address)
+
+            articles = []
+            for i in range(len(feed['entries'])):
+                ttl = feed['entries'][i]['title']
+                lnk = feed['entries'][i]['link']
+                articles.append([ttl, lnk])
+
+            for ndx, i in enumerate(articles):
+                if hash_a_string(lnk) not in titles_read:
+                    print('*', ndx+1, ': ', i[0], sep='')
+                elif show_read == 'read':
+                    print(' ', ndx+1, ': ', i[0], sep='')
+            
+            print()
+            a = input("Show which article? ")
+            if not a:
+                break
+            try:
+                a = int(a)
+                print('Showing...', articles[a-1][1])
+                # show_lastest_rss(articles[a-1][1])
+                break
+            except:
+                break
+
+            """
+            # print all the available posts in the [chosen_feed], depending on show_read setting
+            # if show_read == "read", then print ALL posts, otherwise print only the unread posts
+            for cnt in range(2, len(chosen_feed)):
+                # if the article hasn't been read, flag it with "*"
+                if hash_a_string(chosen_feed[cnt][1]) not in titles_read:
+                    print('*', cnt-1, ': ', chosen_feed[cnt][0], sep='')
+
+                elif show_read == 'read':
+                    print(' ', cnt-1, ': ', chosen_feed[cnt][0], sep='')
+            """     
+        except:
+            pass
+
+    """
+    # {myFeeds} structure:
+        # -- 0: feed title
+        # -- 1: feed RSS
+        # -- 2: feed URL
+        # -- 3: feed.ETag
+        # -- 4: feed.modified
+        # -- 5: updated? (boolean)
+        # -- 6: hash of last entry posted on website
+        # -- 7: link to last entry posted on website
+    """
 
     return None
 
@@ -1336,7 +1408,7 @@ def main_menu(myFeeds, titles_read, err):
                 print('OPML file successfully imported.')
 
         elif menu_choice.upper() == 'L':
-            list_my_feeds(myFeeds)
+            list_my_feeds(myFeeds, titles_read)
 
         elif menu_choice.upper() == 'M':
             myFeeds = move_feed(myFeeds)
