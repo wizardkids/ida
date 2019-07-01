@@ -50,11 +50,8 @@ import requests
 import urlwatch
 from bs4 import BeautifulSoup as bs4
 
-# // -- need a utility to delete a group, or edit its name
+# todo -- list_my_feeds() should have same options as list_updated_feeds()
 
-# // -- figure out how to record the last post by a feed so that when you check next time, you can flag (with a "*") feeds that have been updated. 
-
-# todo -- setting a post to "unread" doesn't work 
 
 
 # === DEVELOPER UTILITY FUNCTIONS ================
@@ -140,22 +137,6 @@ def get_feed_info(rss):
         print('Oops. Encountered an error!')
 
     return
-
-
-def list_my_feeds(myFeeds):
-    """
-    Generate a list of feeds. USED ONLY BY THE DEVELOPER.
-    """
-    print()
-    for k, v in myFeeds.items():
-        print(k)
-        # try, in case there are no feeds for a given group
-        try:
-            for i in v:
-                if i[0]:
-                    print('   ', i[0], sep='')
-        except:
-            pass
 
 
 def print_all_functions():
@@ -1241,6 +1222,35 @@ def hash_a_string(this_string):
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
 
+def list_my_feeds(myFeeds):
+    """
+    Generate a list of feeds.
+    """
+    print()
+    # list feeds, by group, numbering the feeds and flagging updated feeds
+    feed_cnt, grp_cnt, feed_list = 0, 0, []
+    for k, v in myFeeds.items():
+        print(k, sep='')
+        grp_cnt += 1
+        # in case a group has no feeds
+        try:
+            for i in v:
+                if i:
+                    feed_cnt += 1
+                    feed_list.append(i)
+                    try:
+                        if i[5]:
+                            print('  *', feed_cnt, ': ', i[0], sep='')
+                        else:
+                            print('   ', feed_cnt, ': ', i[0], sep='')
+                    except:
+                        pass
+        except:
+            pass
+
+    return None
+
+
 def load_myFeeds_dict():
     """
     Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Structure of {myFeeds}:
@@ -1276,8 +1286,8 @@ def main_menu(myFeeds, titles_read, err):
     Print the main menu on the screen and direct the user's choice.
     """
     menu = (
-        '<c>heck feeds  ', '<a>dd feed     ', '<d>elete feed  ',
-        '<m>ove feed    ', '<e>dit group ', '               ',
+        '<c>heck feeds  ', '<l>ist feeds   ', '<a>dd feed     ',
+        '<e>dit group   ', '<m>ove feed    ', '<d>elete feed  ',
         '<i>mport OPML  ', 'a<b>out        ', '<q>uit         ',
     )
     # 'e<x>port feeds '
