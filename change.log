@@ -93,3 +93,10 @@
     -- add <l> (list_updated_feeds()) and <g> (get_latest_feed()) to the menu, though the user is not given these shortcuts; for developer use only
     -- edited about() so that it prints version and revision numbers
     -- add ability to delete a group to rename_group()
+
+2019-07-01
+    -- modify {myFeeds} structure so that item #5 of each feed is a boolean that tracks whether or not the feed has been updated 
+    -- modify get_latest_feed()
+        -- so it is more efficient
+        -- to update item #5 in {myFeeds} if a feed has changed; this is used in list_updated_feeds() to flag updated feeds
+    -- modify list_updated_feeds() so it flags not only updated feeds, but posts that have not been read, yet
