@@ -84,8 +84,6 @@ updated_feeds = [{feed title: [
 =================================
 """
 
-# todo -- list_my_feeds() needs a menu and a better structure to the function
-
 
 # === DEVELOPER UTILITY FUNCTIONS ================
 
@@ -315,6 +313,9 @@ def get_url_status(url):
 
     return status_code
 
+# ! ==================================================================================
+# todo -- adding and deleting, etc. have to be changed to account for changes in {myFeeds} and [updated_feeds]
+# ! ==================================================================================
 
 # === FEED MANAGEMENT ================
 
@@ -771,7 +772,7 @@ def save_myFeeds(myFeeds):
 
 # === CHECK FEEDS FOR UPDATES ================
 
-def print_feeds(myFeeds):
+def print_feeds(myFeeds, show_read):
     """
     Used by several functions to print a numbered list of feeds.
     """
@@ -936,7 +937,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
     while True:
 
         # list feeds, by group, numbering the feeds and flagging updated feeds
-        feed_cnt = print_feeds(myFeeds)
+        feed_cnt = print_feeds(myFeeds, show_read)
 
         """
         updated_feeds = [{feed title: [
@@ -950,10 +951,10 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                 {feed title: [],}
             ]
         """
-
+        
         # select a feed from the list of feeds
         while True:
-            choice = input('Select feed: ')
+            choice = input('\nSelect feed: ')
             if not choice:
                 break
             try:
@@ -974,18 +975,26 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
             break
         else:
             err = ''
+            # [chosen_feed] is a list of attributes of a single feed
+            chosen_feed = updated_feeds[choice-1]
+            feed_title = list(chosen_feed.keys())[0]
 
             # having chosen a feed, have user choose which post to view
             while True:
-
-                # [chosen_feed] is a list of attributes of a single feed
-                chosen_feed = updated_feeds[choice-1]
+                """
+                {feed title: [
+                    0: feed RSS
+                    1: changed/unchanged
+                    2: [most recent post title, most recent post link]
+                    3: [title, link]
+                    4: ...]}
+                """
 
                 # find the number of articles in [chosen_feed] that have already been read
                 cnt_unread_articles = 0
-                for i in range(2, len(chosen_feed)):
+                for i in range(2, len(chosen_feed[feed_title])):
                     # hash the link and see if it's in [titles_read]
-                    if hash_a_string(chosen_feed[i][1]) not in titles_read:
+                    if hash_a_string(chosen_feed[feed_title][i][1]) not in titles_read:
                         cnt_unread_articles += 1
                 if cnt_unread_articles == 0:
                     print('\n', '='*30, '\nAll articles have been read.\n',
@@ -996,21 +1005,18 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                         titles_read = set_post_to_unread(titles_read, chosen_feed)
                     break
 
-                # structure of [chosen_feed]
-                    # -- feed title
-                    # -- RSS address
-                    # -- n items containing [post title, post link]
-
                 print()
                 # print all the available posts in the [chosen_feed], depending on show_read setting
                 # if show_read == "read", then print ALL posts, otherwise print only the unread posts
-                for cnt in range(2, len(chosen_feed)):
+                for cnt in range(3, len(chosen_feed[feed_title])):
                     # if the article hasn't been read, flag it with "*"
-                    if hash_a_string(chosen_feed[cnt][1]) not in titles_read:
-                        print('*', cnt-1, ': ', chosen_feed[cnt][0], sep='')
+                    if hash_a_string(chosen_feed[feed_title][cnt][1]) not in titles_read:
+                        print('*', cnt-2, ': ',
+                              chosen_feed[feed_title][cnt][0], sep='')
 
                     elif show_read == 'read':
-                        print(' ', cnt-1, ': ', chosen_feed[cnt][0], sep='')
+                        print(' ', cnt-2, ': ',
+                              chosen_feed[feed_title][cnt][0], sep='')
 
                 print()
 
@@ -1044,9 +1050,9 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     try:
                         post = int(post)
                         # user should enter an integer between 1 and the number of entries in [chosen_feed]
-                        if post < 0 or post + 1 > len(chosen_feed):
+                        if post < 0 or post + 1 > len(chosen_feed[feed_title])-3:
                             err = '='*30 + '\nEnter an integer between 1 and ' + \
-                                str(len(chosen_feed)-2) + \
+                                str(len(chosen_feed)-3) + \
                                 '\nor a menu item.\n' + '='*30 + '\n'
                             continue
                     except ValueError:
@@ -1056,28 +1062,12 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                         continue
 
                     if post:
+                        this_link = chosen_feed[feed_title][post+2][1]
                         # print('Showing...', chosen_feed[post+1][0])
-                        show_lastest_rss(chosen_feed[post+1][1])
-
-                        most_recent_title = chosen_feed[post+1][0]
-                        most_recent_link = chosen_feed[post+1][1]
+                        show_lastest_rss(this_link)
 
                         # hash link; put in [titles_read] so you know it's been read
-                        titles_read.append(hash_a_string(most_recent_link))
-
-                        for k, v in myFeeds.items():
-                            for feed in v:
-                                # in case the "feed" is empty
-                                try:
-                                    if feed[0] == chosen_feed[0]:
-                                        try:
-                                            feed[6] = most_recent_title
-                                            feed[7] = most_recent_link
-                                        except:
-                                            pass
-                                        break
-                                except:
-                                    pass
+                        titles_read.append(hash_a_string(this_link))
                     else:
                         break
 
@@ -1086,6 +1076,8 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
 
             if not post:
                 continue
+
+    print()
 
     return myFeeds, updated_feeds, titles_read
 
@@ -1102,6 +1094,8 @@ def set_post_to_unread(titles_read, chosen_feed):
     """
     In list_updated_feeds(), set one or more read posts to unread.
     """
+    feed_title = list(chosen_feed.keys())[0]
+
     print()
     while True:
         article_number = input("Number or range of post(s) to set to unread: ")
@@ -1112,7 +1106,7 @@ def set_post_to_unread(titles_read, chosen_feed):
             try:
                 ndx = article_number.index('-')
                 start_num = int(article_number[0:ndx])
-                end_num = int(article_number[ndx+1:])+1
+                end_num = int(article_number[ndx+1:])+2
             except ValueError:
                 print('='*30, '\nEnter a range of integers separated by a hyphen.\n', '='*30, sep='')
                 return titles_read
@@ -1125,7 +1119,7 @@ def set_post_to_unread(titles_read, chosen_feed):
                 article_number = int(article_number)
             except:
                 print('='*30, '\nEnter an integer between 1 and ', \
-                    len(chosen_feed)-2, '\n', '='*30, '\n', sep='', end='')
+                    len(chosen_feed[feed_title])-2, '\n', '='*30, '\n', sep='', end='')
                 continue
             if not article_number:
                 break
@@ -1148,8 +1142,8 @@ def set_post_to_read(titles_read, chosen_feed):
         if '-' in article_number:
             try:
                 ndx = article_number.index('-')
-                start_num = int(article_number[0:ndx])
-                end_num = int(article_number[ndx+1:])+1
+                start_num = int(article_number[0:ndx]) + 1
+                end_num = int(article_number[ndx+1:])+2
             except ValueError:
                 print(
                     '='*30, '\nEnter a range of integers separated by a hyphen.\n', '='*30, sep='')
@@ -1177,7 +1171,9 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
     """
     Utility function to set one article in a feed to 'read'.
     """
-    link = hash_a_string(chosen_feed[article_number+1][1])
+    feed_title = list(chosen_feed.keys())[0]
+
+    link = hash_a_string(chosen_feed[feed_title][article_number+1][1])
 
     titles_read.append(link)
     # strip out repeat titles
@@ -1191,8 +1187,10 @@ def set_to_unread_one_article(article_number, chosen_feed, titles_read):
     """
     Utility function to unread one article in a feed.
     """
+    feed_title = list(chosen_feed.keys())[0]
+
     try:
-        link = hash_a_string(chosen_feed[article_number+1][1])
+        link = hash_a_string(chosen_feed[feed_title][article_number+1][1])
     # in case user chose a title that is unread...
         try:
             ndx = titles_read.index(link)
@@ -1202,7 +1200,7 @@ def set_to_unread_one_article(article_number, chosen_feed, titles_read):
                     '='*30, '\n', sep='', end='')
     except:
         print('='*30, '\nEnter an integer between 1 and ',
-              len(chosen_feed)-2, '\n', '='*30, '\n',  sep='', end='')
+              len(chosen_feed[feed_title])-2, '\n', '='*30, '\n',  sep='', end='')
 
     return titles_read
 
@@ -1375,16 +1373,7 @@ def list_my_feeds(myFeeds, titles_read):
 
 def load_myFeeds_dict():
     """
-    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. Structure of {myFeeds}:
-
-        # -- 0: feed title
-        # -- 1: feed RSS
-        # -- 2: feed URL
-        # -- 3: feed.ETag
-        # -- 4: feed.modified
-        # -- 5: updated? (boolean)
-        # -- 6: hash of title of last entry posted on website
-        # -- 7: link to last entry posted on website
+    Read myFeeds.json and return a dictionary of the RSS feeds. Each key is a group and each value is a list of RSS feeds in that group. 
     """
     try:
         with open("myFeeds.json", 'r') as file:

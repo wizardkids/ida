@@ -107,3 +107,5 @@
 2019-07-03
     -- change structure of {myFeeds} and [updated_feeds] to make listing feeds more efficient, to track changed/unchanged status, and to allow for "offline" listing of feeds and titles
     -- save [updated_feeds] to a json file after checking for updates so the list of updates can be revisited without having to continually reuse feedparser()
+    -- change list_updated_feeds() so it works after <c>heck feeds and with <l>ist feeds
+    -- fix set read/unread status of feed articles
