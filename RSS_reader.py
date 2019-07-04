@@ -779,23 +779,6 @@ def save_myFeeds(myFeeds):
 def print_feeds(myFeeds, show_read):
     """
     Used by several functions to print a numbered list of feeds.
-
-    myFeeds = {'Group': [
-                    {feed title: [
-                        0: feed RSS
-                        1: feed URL
-                        2: feed.ETag
-                        3: feed.modified
-                        4: changed/unchanged
-                        5: title of last entry posted on website
-                        6: link to last entry posted on website
-                        ]
-                    },
-                    {feed title: [
-                        ...
-                    ]}
-                ]
-            }
     """
     ndx = 0
     for group, feeds in myFeeds.items():
@@ -959,19 +942,6 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
 
         # list feeds, by group, numbering the feeds and flagging updated feeds
         feed_cnt = print_feeds(myFeeds, show_read)
-
-        """
-        updated_feeds = [{feed title: [
-                        0: feed RSS
-                        1: updated? (boolean)
-                        2: [most recent post title, most recent post link]
-                        3: [title, link]
-                        4: ...
-                        ]
-                    }
-                {feed title: [],}
-            ]
-        """
         
         # select a feed from the list of feeds
         while True:
@@ -1272,124 +1242,6 @@ def hash_a_string(this_string):
     Create a hash value for a string (this_string). This utility is used to hash titles to speed up comparison of titles and reduce list storage space.
     """
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
-
-
-def list_my_feeds(myFeeds, titles_read):
-    """
-    Generate a list of feeds from which the user can choose articles.
-    """
-    # default for article list is to show only unread articles
-    show_read = 'read'
-
-    # -- feed title
-    # -- RSS address
-    # -- n items containing [post title, post link]
-
-    updated_feeds, rss_feed = [], []
-    for k, v in myFeeds.items():
-        for i in v:
-            rss_feed.append(i[0])
-            rss_feed.append(i[1])
-            feed_update = feedparser.parse(i[1])
-            for ndx, i in enumerate(feed_update['entries']):
-                rss_feed.append([i['title'], i['link']])
-        updated_feeds.append(rss_feed)
-
-    myFeeds, updated_feeds, titles_read = list_updated_feeds(myFeeds)
-
-    return 
-
-    # print()
-    # # list feeds, by group, numbering the feeds and flagging updated feeds
-    # feed_cnt, grp_cnt, feed_list = 0, 0, []
-    # for k, v in myFeeds.items():
-    #     print(k, sep='')
-    #     grp_cnt += 1
-    #     # in case a group has no feeds
-    #     try:
-    #         for i in v:
-    #             if i:
-    #                 feed_cnt += 1
-    #                 feed_list.append(i)
-    #                 try:
-    #                     if i[5]:
-    #                         print('  *', feed_cnt, ': ', i[0], sep='')
-    #                     else:
-    #                         print('   ', feed_cnt, ': ', i[0], sep='')
-    #                 except:
-    #                     pass
-    #     except:
-    #         pass
-
-    # while True:
-    #     print()
-    #     g = input('Show articles for which feed? ')
-    #     if not g:
-    #         break
-    #     rss_address = ''
-    #     try:
-    #         g = int(g)
-    #         f = feed_list[g-1]
-    #         for k, v in myFeeds.items():
-    #             for i in v:
-    #                 if i[0] == f[0]:
-    #                     rss_address = i[1]
-    #                     break
-    #             if rss_address:
-    #                 break
-    #         feed = feedparser.parse(rss_address)
-
-    #         articles = []
-    #         for i in range(len(feed['entries'])):
-    #             ttl = feed['entries'][i]['title']
-    #             lnk = feed['entries'][i]['link']
-    #             articles.append([ttl, lnk])
-
-    #         for ndx, i in enumerate(articles):
-    #             if hash_a_string(lnk) not in titles_read:
-    #                 print('*', ndx+1, ': ', i[0], sep='')
-    #             elif show_read == 'read':
-    #                 print(' ', ndx+1, ': ', i[0], sep='')
-            
-    #         print()
-    #         a = input("Show which article? ")
-    #         if not a:
-    #             break
-    #         try:
-    #             a = int(a)
-    #             print('Showing...', articles[a-1][1])
-    #             # show_lastest_rss(articles[a-1][1])
-    #             break
-    #         except:
-    #             break
-
-    #         """
-    #         # print all the available posts in the [chosen_feed], depending on show_read setting
-    #         # if show_read == "read", then print ALL posts, otherwise print only the unread posts
-    #         for cnt in range(2, len(chosen_feed)):
-    #             # if the article hasn't been read, flag it with "*"
-    #             if hash_a_string(chosen_feed[cnt][1]) not in titles_read:
-    #                 print('*', cnt-1, ': ', chosen_feed[cnt][0], sep='')
-
-    #             elif show_read == 'read':
-    #                 print(' ', cnt-1, ': ', chosen_feed[cnt][0], sep='')
-    #         """     
-    #     except:
-    #         pass
-
-    # """
-    # # {myFeeds} structure:
-    #     # -- 0: feed title
-    #     # -- 1: feed RSS
-    #     # -- 2: feed URL
-    #     # -- 3: feed.ETag
-    #     # -- 4: feed.modified
-    #     # -- 5: updated? (boolean)
-    #     # -- 6: hash of last entry posted on website
-    #     # -- 7: link to last entry posted on website
-    # """
-
-    return myFeeds, updated_feeds
 
 
 def load_myFeeds_dict():
