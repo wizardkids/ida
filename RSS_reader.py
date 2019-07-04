@@ -476,6 +476,17 @@ def clean_feeds(myFeeds):
     except:
         pass
 
+    # find empty groups in {myFeeds} and delete them, excepting "Default"
+    # this will only work for one empty group at a time
+    for group, feeds in myFeeds.items():
+        if group == 'Default':
+            continue
+        elif not myFeeds[group]:
+            myFeeds.pop(group)
+            break
+        else:
+            pass
+
     save_myFeeds(myFeeds)
 
     return myFeeds

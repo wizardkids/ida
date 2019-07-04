@@ -114,3 +114,4 @@
     -- fix add_feed() and print_feeds() so they work with the new {myFeeds} structure
     -- fix del_feed() so it works with the new {myFeeds} structure
     -- remove list_my_feeds(), since it is no longer needed
+    -- fix clean_feeds() so that it deletes empty groups (excepting "Default"); right now this only works for one group at a time to avoid "RuntimeError: dictionary changed size during iteration"
