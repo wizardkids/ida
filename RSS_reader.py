@@ -313,9 +313,6 @@ def get_url_status(url):
 
     return status_code
 
-# ! ==================================================================================
-# todo -- adding and deleting, etc. have to be changed to account for changes in {myFeeds} and [updated_feeds]
-# ! ==================================================================================
 
 # === FEED MANAGEMENT ================
 
@@ -377,29 +374,38 @@ def add_feed(myFeeds):
             return myFeeds, err
 
     # add info into [new_feed]
-    # https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw
-    new_feed = []
+    """
+    {feed title: [
+                        0: feed RSS
+                        1: feed URL
+                        2: feed.ETag
+                        3: feed.modified
+                        4: changed/unchanged
+                        5: title of last entry posted on website
+                        6: link to last entry posted on website
+                        ]
+                    },
+    """
+    new_feed = {}
     try:
-        new_feed.append(feed['feed']['title'])
+        feed_title = feed['feed']['title']
     except:
-        new_feed.append('')
+        err = 'No feed found.'
+        return myFeeds, err
     try:
-        new_feed.append(feed['href'])
+        URL = feed['href']
     except:
-        new_feed.append('')
-    new_feed.append(f)
-    new_feed.append('')
-    new_feed.append('')
-    new_feed.append('')
-    new_feed.append('')
+        URL = ''
     try:
-        new_feed.append(feed['entries'][0]['title'])
+        post_title = feed['entries'][0]['title']
     except:
-        new_feed.append('')
+        post_title = ''
     try:
-        new_feed.append(feed['entries'][0]['link'])
+        post_link = feed['entries'][0]['link']
     except:
-        new_feed.append('')
+        post_link = ''
+
+    new_feed.update({feed_title: [rss_address, URL, '', '', 'unchanged', [post_title, post_link]]})
 
     # get the group that the feed should be added to...
     print('\nGroups:')
@@ -436,15 +442,15 @@ def add_feed(myFeeds):
         else:
             grp_name = ''
 
-    # add [new_feed] to the appropriate group
-    if isinstance(grp_name, str):
-        if grp_name:
+    # add [new_feed] to the appropriate group or create group if it doesn't exist
+    if grp_name:
+        try:
             # if the group already exists...
-            if grp_name in myFeeds.keys():
-                myFeeds[grp_name].append(new_feed)
-            # otherwise, create a new group
-            else:
-                myFeeds.update({grp_name: [new_feed]})
+            myFeeds[grp_name].update(new_feed)
+        except:
+            myFeeds.update({grp_name: {}})
+            myFeeds[grp_name].update(new_feed)
+
 
     myFeeds = clean_feeds(myFeeds)
 
@@ -775,13 +781,30 @@ def save_myFeeds(myFeeds):
 def print_feeds(myFeeds, show_read):
     """
     Used by several functions to print a numbered list of feeds.
+
+    myFeeds = {'Group': [
+                    {feed title: [
+                        0: feed RSS
+                        1: feed URL
+                        2: feed.ETag
+                        3: feed.modified
+                        4: changed/unchanged
+                        5: title of last entry posted on website
+                        6: link to last entry posted on website
+                        ]
+                    },
+                    {feed title: [
+                        ...
+                    ]}
+                ]
+            }
     """
     ndx = 0
-    for group, feed in myFeeds.items():
+    for group, feeds in myFeeds.items():
         print(group)
-        for k, v in feed.items():
+        for feed_title, feed_info in feeds.items():
             ndx += 1
-            print('  ', ndx, ": ", k, sep='')
+            print('  ', ndx, ": ", feed_title, sep='')
 
     return ndx
 
@@ -1079,7 +1102,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
 
     print()
 
-    return myFeeds, updated_feeds, titles_read
+    return myFeeds, titles_read
 
 
 def toggle_show_read_articles(show_read):
@@ -1442,7 +1465,8 @@ def main_menu(myFeeds, titles_read, err):
                 print('OPML file successfully imported.')
 
         elif menu_choice.upper() == 'L':
-            list_my_feeds(myFeeds, titles_read)
+            myFeeds, titles_read = list_updated_feeds(
+                myFeeds, titles_read)
 
         elif menu_choice.upper() == 'M':
             myFeeds = move_feed(myFeeds)
