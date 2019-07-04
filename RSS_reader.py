@@ -84,6 +84,8 @@ updated_feeds = [{feed title: [
 =================================
 """
 
+# todo -- add code to clean_feeds() that deletes any empty group except "Default"
+
 
 # === DEVELOPER UTILITY FUNCTIONS ================
 
@@ -461,11 +463,10 @@ def add_feed(myFeeds):
 
 def clean_feeds(myFeeds):
     """
-    Deletes feeds that are duplicates or that have no title. The latter can happen when a user deletes
-    a feed: del_feed() sets the title to ''
+    Deletes feeds that are duplicates or that have no RSS address. The latter can happen when a user deletes a feed: del_feed() sets the title to ''
     """
-    # delete any feed with no title or any "feed" that is blank (e.g. "LifeHacker": [[]])
 
+    # delete any feed with no RSS address
     try:
         for group, feeds in myFeeds.items():
             for feed_title, feed_info in feeds.items():
@@ -476,8 +477,7 @@ def clean_feeds(myFeeds):
         pass
 
     save_myFeeds(myFeeds)
-
-    print()
+    
     return myFeeds
 
 
@@ -486,23 +486,13 @@ def del_feed(myFeeds):
     Delete a feed.
     """
     err = ''
+    show_read = False
+
     feed_list, feed_cnt, grp_cnt = [], 0, 0
+
     # generate a list of feed names
-    for k, v in myFeeds.items():
-        print(k, sep='')
-        grp_cnt += 1
-        # in case a group has no feeds
-        try:
-            for i in v:
-                if i:
-                    feed_cnt += 1
-                    feed_list.append(i)
-                    try:
-                        print('   ', feed_cnt, ': ', i[0], sep='')
-                    except:
-                        pass
-        except:
-            pass
+    print()
+    feed_cnt = print_feeds(myFeeds, show_read)
 
     print()
     # get the name of the feed to delete
@@ -524,15 +514,16 @@ def del_feed(myFeeds):
             continue
 
     # find that name in {myFeeds} and set title to ''
-    if f:
-        this_feed = feed_list[f-1][0]
-        for k, v in myFeeds.items():
-            for i in v:
-                if i[0] == this_feed:
-                    i[0] = ''
-                    break
-            if not i[0]:
-                break
+    ndx = 0
+    for group, feeds in myFeeds.items():
+        print(group)
+        for feed_title, feed_info in feeds.items():
+            ndx += 1
+            if ndx == f:
+                print('  ', ndx, ": ", feed_title, sep='')
+                myFeeds[group][feed_title][0] = ''
+
+    print()
 
     myFeeds = clean_feeds(myFeeds)
 
