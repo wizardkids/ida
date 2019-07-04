@@ -477,7 +477,7 @@ def clean_feeds(myFeeds):
         pass
 
     save_myFeeds(myFeeds)
-    
+
     return myFeeds
 
 
@@ -495,7 +495,7 @@ def del_feed(myFeeds):
     feed_cnt = print_feeds(myFeeds, show_read)
 
     print()
-    # get the name of the feed to delete
+    # get the number of the feed to delete
     while True:
         f=input('Number of feed to delete: ')
         if not f:
@@ -605,55 +605,62 @@ def move_feed(myFeeds):
     """
     Move a feed to a different group.
     """
+    show_read = False
+
     while True:
         # list feeds, by group, numbering the feeds
         feed_cnt, grp_cnt, feed_list = 0, 0, []
 
-        for k, v in myFeeds.items():
-            print(k, sep='')
-            grp_cnt += 1
-            # in case a group has no feeds
-            try:
-                for i in v:
-                    if i:
-                        feed_cnt += 1
-                        feed_list.append(i)
-                        try:
-                            print('   ', feed_cnt, ': ', i[0], sep='')
-                        except:
-                            pass
-            except:
-                pass
+        # generate a list of feed names
+        print()
+        feed_cnt = print_feeds(myFeeds, show_read)
 
         print()
         # enter the number of the feed to move
-        feed_num = input('Number of feed to move: ')
-        try:
-            feed_num = int(feed_num)
-            feed_name = feed_list[feed_num-1][0]
-            # find the feed in {myFeeds}
-            this_feed = ''
-            for k, v in myFeeds.items():
-                if not v:
-                    continue
-                # in case group holds no feeds
-                try:
-                    for ndx, i in enumerate(v):
-                        if i[0] == feed_name:
-                            this_feed = i
-                            v.pop(ndx)
-                        if this_feed:
-                            break
-                    if this_feed:
-                        break
-                except:
-                    pass
-        except:
+        f = input('Number of feed to move: ')
+        if not f:
             break
+        try:
+            f = int(f)
+            if f < 1 or f > feed_cnt:
+                print('\n', '='*30, '\nEnter an integer between 1 and ',
+                      feed_cnt, '.\n', '='*30, '\n', sep='')
+                continue
+            else:
+                pass
+        except ValueError:
+            print('\n', '='*30, '\nEnter an integer between 1 and ',
+                  feed_cnt, '.\n', '='*30, '\n', sep='')
+            continue
+
+        # find that name in {myFeeds} and set title to ''
+        ndx = 0
+        for group, feeds in myFeeds.items():
+            for fd_ttl, feed_info in feeds.items():
+                ndx += 1
+                if ndx == f:
+                    print('  ', ndx, ": ", fd_ttl, sep='')
+                    this_feed = myFeeds[group][fd_ttl]
+                    feed_title = fd_ttl
+                    myFeeds[group][fd_ttl][0] = ''
+                    break
 
         # enter the name of the group to receive the moving feed
         group_name = input("Enter name of group receiving feed: ").strip()
         done = False
+
+        # find that name in {myFeeds} and set title to ''
+        ndx = 0
+        for group, feeds in myFeeds.items():
+            print(group)
+            if group == group_name:
+                try:
+                    # if the group already exists...
+                    myFeeds[group].update({feed_title: [this_feed]})
+                except:
+                    myFeeds.update({group_name: {}})
+                    myFeeds[group_name].update({feed_title: [this_feed]})
+
         try:
             # find the group in {myFeeds}
             for k, v in myFeeds.items():
