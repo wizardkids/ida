@@ -1138,9 +1138,9 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
 
                     if post:
                         this_link = chosen_feed[feed_title][post+2][1]
-                        print('Showing...', chosen_feed[feed_title][post+2][0])
-                        print(this_link)
-                        # show_lastest_rss(this_link)
+                        # print('Showing...', chosen_feed[feed_title][post+2][0])
+                        # print(this_link)
+                        show_lastest_rss(this_link)
 
                         # hash link; put in [titles_read] so you know it's been read
                         titles_read.append(hash_a_string(this_link))
@@ -1354,10 +1354,12 @@ def main_menu(myFeeds, titles_read, err):
     """
     Print the main menu on the screen and direct the user's choice.
     """
-    menu = (
-        '<c>heck feeds  ', '<l>ist feeds   ', '<a>dd feed     ',
-        '<e>dit group   ', '<m>ove feed    ', '<d>elete feed  ',
-        '<i>mport OPML  ', 'a<b>out        ', '<q>uit         ',
+    menu = (     
+        '<i>mport OPML     ', '<c>heck feeds   ', '<a>dd feed    ',
+        '<e>dit group      ', '<l>ist feeds    ', '<d>elete feed ',
+        'edit <r>ss address', '                ', '<m>ove feed   ',
+        '                  ', 'a<b>out         ', '<q>uit        ',
+
     )
     # 'e<x>port feeds '
 
