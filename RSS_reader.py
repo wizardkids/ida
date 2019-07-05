@@ -207,7 +207,7 @@ def print_all_functions():
 
 def import_OPML(myFeeds):
     """
-    Parse an OPML file and put group names, feed titles, and feed addresses in {myFeeds} in the form {'Group name': [[title1, RSS1], [title2, RSS2], placeholder feed.ETag, feed.modified, feed.updated], [...]], ... }. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
+    Parse an OPML file and put group names, feed titles, and feed addresses in {myFeeds} in the form {'Group': [{feed title: [0: feed RSS, 1: feed URL, 2: feed.ETag, 3: feed.modified, 4: changed/unchanged, 5: title of last entry posted on website, 6: link to last entry posted on website]}]}. If no filename is entered, process is aborted. If FileNotFoundError is generated, notify user and <continue>. With confirmation, this file is overwritten each time an OPML file is read.
 
     Output: {myFeeds} is written to myFeeds.json.
     """
@@ -298,7 +298,7 @@ def import_OPML(myFeeds):
 
 def get_url_status(url):
     """
-    Get the status code for a URL. This function is used during import of an OPML file to be sure each feed is accessible.
+    Get the status code for a URL. This function is used by import_OPML() to be sure each feed is accessible.
     """
     # set the headers like we are a browser
     headers = {
@@ -322,7 +322,6 @@ def add_feed(myFeeds):
 
     - enter URL of feed and optionally a group (new or existing)
     - go to the URL, get the RSS feed address
-
     """
     err = ''
     print()
@@ -413,7 +412,7 @@ def add_feed(myFeeds):
     except:
         post_link = ''
 
-    new_feed.update({feed_title: [rss_address, URL, '', '', 'unchanged', [post_title, post_link]]})
+    new_feed.update({feed_title: [rss_address, URL, '', '', 'unchanged', post_title, post_link]})
 
     # get the group that the feed should be added to...
     print('\nGroups:')
@@ -469,7 +468,7 @@ def add_feed(myFeeds):
 
 def clean_feeds(myFeeds):
     """
-    Deletes feeds that are duplicates or that have no RSS address. The latter can happen when a user deletes a feed: del_feed() sets the title to ''
+    Deletes feeds that are duplicates or that have no RSS address. The latter can happen when a user deletes a feed: del_feed() sets the RSS address to ''
     """
 
     # delete any feed with no RSS address
@@ -552,23 +551,6 @@ def del_feed(myFeeds):
 def edit_RSS_address(myFeeds):
     """
     Manually enter an RSS address for a feed.
-
-    myFeeds = {'Group': [
-                    {feed title: [
-                        0: feed RSS
-                        1: feed URL
-                        2: feed.ETag
-                        3: feed.modified
-                        4: changed/unchanged
-                        5: title of last entry posted on website
-                        6: link to last entry posted on website
-                        ]
-                    },
-                    {feed title: [
-                        ...
-                    ]}
-                ]
-            }
     """
     show_read = False
     feed_cnt = print_feeds(myFeeds, show_read)
@@ -869,15 +851,18 @@ def save_myFeeds(myFeeds):
 
 def print_feeds(myFeeds, show_read):
     """
-    Used by several functions to print a numbered list of feeds.
+    Print a numbered list of feeds.
+    Used by: del_feed(), edit_rss_address(), move_feed(), list_updated_feeds()
     """
     ndx = 0
     for group, feeds in myFeeds.items():
         print(group)
         for feed_title, feed_info in feeds.items():
             ndx += 1
-            print('  ', ndx, ": ", feed_title, sep='')
-
+            if feed_info[4] == 'unchanged':
+                print('  ', ndx, ": ", feed_title, sep='')
+            else:
+                print(' *', ndx, ": ", feed_title, sep='')
     return ndx
 
 
@@ -923,7 +908,6 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
     Access a feed. Compare the title and link of the most recent post to the title and link stored in {myFeeds}. If they are the same, then the feed has not been updated. If they are different, then in [updated_feeds], flag the feed as having changed.
 
     https://pythonhosted.org/feedparser/http-ETag.html
-    
     https://fishbowl.pastiche.org/2002/10/21/http_conditional_get_for_rss_hackers
     """
     
@@ -982,19 +966,21 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
         # if the last_link or last_title in {myFeeds} != the most_recent_link or most_recent_title, then the feed has been updated, so update {myFeeds} 
         if last_link != most_recent_link or last_title != most_recent_title:
             this_feed[feed_title][1] = 'changed'
-            for group, feeds in myFeeds.items():
-                for feed in feeds:
-                    if feed == feed_title:
-                        try:
+        else:
+            this_feed[feed_title][1] = 'unchanged'
+        
+        for group, feeds in myFeeds.items():
+            for feed in feeds:
+                if feed == feed_title:
+                    # try:
+                        if last_link != most_recent_link or last_title != most_recent_title:
                             feeds[feed_title][4] = 'changed'
                             feeds[feed_title][5] = most_recent_title
                             feeds[feed_title][6] = most_recent_link
-                        except:
+                        else:
                             feeds[feed_title][4] = 'unchanged'
-                    else:
-                        continue
-        else:
-            pass
+                    # except:
+                    #     pass
 
         # finally, add {this_feed} to the list of feeds in [updated_feeds]
         updated_feeds.append(this_feed)
@@ -1007,7 +993,7 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
 
 def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
     """
-    Create a list of your feeds. Let user select from that list one feed and then create a list of updated articles. Default to filtering out articles that have been read. Let user choose articles to read online.
+    Create a list of your feeds. Let user select from that list one feed and then create a list of updated articles for that feed. Default to filtering out articles that have been read. Let user choose articles to read online.
     """
 
     try:
@@ -1264,7 +1250,7 @@ def set_post_to_read(titles_read, chosen_feed):
 
 def set_to_read_one_article(article_number, chosen_feed, titles_read):
     """
-    Utility function to set one article in a feed to 'read'.
+    Utility function to set one article in a feed to 'read' status. Used by set_post_to_read().
     """
     feed_title = list(chosen_feed.keys())[0]
 
@@ -1280,7 +1266,7 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
 
 def set_to_unread_one_article(article_number, chosen_feed, titles_read):
     """
-    Utility function to unread one article in a feed.
+    Utility function to set one article in a feed to 'unread' status. Used by set_post_to_unread().
     """
     feed_title = list(chosen_feed.keys())[0]
 
@@ -1343,7 +1329,7 @@ def fold(txt):
 
 def hash_a_string(this_string):
     """
-    Create a hash value for a string (this_string). This utility is used to hash titles to speed up comparison of titles and reduce list storage space.
+    Create a hash value for a string (this_string). This utility is used to hash links before storing the link in [titles_read]. Hashing saves disk space and speeds searching the [list].
     """
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
