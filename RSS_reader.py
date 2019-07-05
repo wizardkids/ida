@@ -84,8 +84,6 @@ updated_feeds = [{feed title: [
 =================================
 """
 
-# todo -- add code to clean_feeds() that deletes any empty group except "Default"
-
 
 # === DEVELOPER UTILITY FUNCTIONS ================
 
@@ -151,7 +149,7 @@ def get_feed_info(rss):
         except:
             print('\nNo updated datetime.')
         try:
-            print('\nLatest articleposted:')
+            print('\nLatest article posted:')
             print(newsfeed['entries'][0]['title'])
             print(newsfeed['entries'][0]['link'])
         except:
@@ -331,6 +329,7 @@ def add_feed(myFeeds):
     # enter a URL, find the feed address, parse the feed
     f = input('Website address: ')
     try:
+        print('\nLooking for RSS address...')
         result = findfeed(f)
         # check alternate RSS formats
         if not result:
@@ -345,16 +344,23 @@ def add_feed(myFeeds):
             result = findfeed(f + '/atom.xml')
         if not result:
             result = feedburner_rss(f)
-        if not result:
-            result = feed_xml(f)
         if not result and 'youtube.com' in f:
             result = youtube_rss(f)
+        if not result:
+            result = feed_xml(f + '/index.xml')
         if not result:
             result = ''
     except:
         err = 'Did you forget "http://"?'
         return myFeeds, err
 
+    if not result:
+        print('\nFeed not found.')
+        result = input('Enter RSS address manually: ')
+        if not result:
+            err = 'Feed not added.'
+            return myFeeds, err
+    # http://feeds.nature.com/nature/rss/current
     rss_address = ''
     if isinstance(result, list):
         for r in result:
@@ -543,13 +549,87 @@ def del_feed(myFeeds):
     return myFeeds
 
 
+def edit_RSS_address(myFeeds):
+    """
+    Manually enter an RSS address for a feed.
+
+    myFeeds = {'Group': [
+                    {feed title: [
+                        0: feed RSS
+                        1: feed URL
+                        2: feed.ETag
+                        3: feed.modified
+                        4: changed/unchanged
+                        5: title of last entry posted on website
+                        6: link to last entry posted on website
+                        ]
+                    },
+                    {feed title: [
+                        ...
+                    ]}
+                ]
+            }
+    """
+    show_read = False
+    feed_cnt = print_feeds(myFeeds, show_read)
+
+    while True:
+        print()
+        f = input('Enter number of feed to edit: ')
+        if not f:
+            break
+        try:
+            f = int(f)
+            if f < 1 or f > feed_cnt:
+                print('\n', '='*30, '\nEnter an integer between 1 and ',
+                      feed_cnt, '.\n', '='*30, '\n', sep='')
+                continue
+            else:
+                break
+        except ValueError:
+            print('\n', '='*30, '\nEnter an integer between 1 and ',
+                  feed_cnt, '.\n', '='*30, '\n', sep='')
+            continue
+
+    while True:
+        r = input('Enter an RSS address: ')
+        if not r:
+            break
+
+        # find that name in {myFeeds} and set RSS_address to r
+        ndx, done = 0, False
+        for group, feeds in myFeeds.items():
+            for feed_title, feed_info in feeds.items():
+                ndx += 1
+                if ndx == f:
+                    print('\nSetting RSS address for ',
+                          feed_title, ' to\n', r, '\n', sep='')
+                    ok = input('OK (Y/N)').upper()
+                    if ok == 'Y':
+                        myFeeds[group][feed_title][0] = r
+                        print('\n', '='*30, '\nRSS address for ', feed_title,
+                              '\nhas been set to:\n', r, '\n', '='*30, '\n', sep='')
+                    else:
+                        print('\n', '='*30, '\nRSS address for ', feed_title,
+                              '\nhas not been changed.\n', '='*30, '\n', sep='')
+                    done = True
+        if done:
+            break
+
+    myFeeds = clean_feeds(myFeeds)
+
+    save_myFeeds(myFeeds)
+
+    return myFeeds
+
+
 def feed_xml(f):
     """
     Find a feed when the blog uses an xml address.
     """
     feed = feedparser.parse(f)
-    result = feed['href'] + '/index.xml'
-
+    href = feed['href'] + '/index.xml'
+    result =  href if 'error' not in feed['href'] else '' 
     return result
 
 
@@ -831,8 +911,6 @@ def find_all_changes(myFeeds):
     for rss_feed in rss_list:
         myFeeds, updated_feeds, bad_feeds = get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds)
 
-    print(updated_feeds)
-
     with open('history.json', 'w+', encoding='utf-8') as file:
         file.write(json.dumps(updated_feeds, ensure_ascii=False))
 
@@ -867,8 +945,17 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
     except IndexError:
         most_recent_link = ''
 
-    last_title = myFeeds[group][feed_title][5]
-    last_link = myFeeds[group][feed_title][6]
+    if not most_recent_title or not most_recent_link:
+        print('\n', '='*30, '\nNo feed found for:\n', feed_title, '\n', '='*30, '\n', sep='')
+
+    try:
+        last_title = myFeeds[group][feed_title][5]
+    except:
+        last_title = ''
+    try:
+        last_link = myFeeds[group][feed_title][6]
+    except:
+        last_link = ''
 
     """
     {this_feed} = {feed title: [
@@ -1052,32 +1139,38 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     try:
                         post = int(post)
                         # user should enter an integer between 1 and the number of entries in [chosen_feed]
-                        if post < 0 or post + 1 > len(chosen_feed[feed_title])-3:
+                        if post < 0 or post + 1 > len(chosen_feed[feed_title])-2:
                             err = '='*30 + '\nEnter an integer between 1 and ' + \
                                 str(len(chosen_feed)-3) + \
                                 '\nor a menu item.\n' + '='*30 + '\n'
                             continue
                     except ValueError:
                         err = '='*30 + '\nEnter an integer between 1 and ' + \
-                            str(len(chosen_feed)-3) + \
+                            str(len(chosen_feed)-2) + \
                             '\nor a menu item.\n' + '='*30 + '\n'
                         continue
 
                     if post:
                         this_link = chosen_feed[feed_title][post+2][1]
-                        # print('Showing...', chosen_feed[post+1][0])
-                        show_lastest_rss(this_link)
+                        print('Showing...', chosen_feed[feed_title][post+2][0])
+                        print(this_link)
+                        # show_lastest_rss(this_link)
 
                         # hash link; put in [titles_read] so you know it's been read
                         titles_read.append(hash_a_string(this_link))
+                        print()
                     else:
                         break
 
+                
+            print()
+
             if cnt_unread_articles == 0:
                 continue
-
-            if not post:
+            elif not post:
                 continue
+            else:
+                break
 
     print()
 
@@ -1108,7 +1201,7 @@ def set_post_to_unread(titles_read, chosen_feed):
             try:
                 ndx = article_number.index('-')
                 start_num = int(article_number[0:ndx])
-                end_num = int(article_number[ndx+1:])+2
+                end_num = int(article_number[ndx+1:])+1
             except ValueError:
                 print('='*30, '\nEnter a range of integers separated by a hyphen.\n', '='*30, sep='')
                 return titles_read
@@ -1158,7 +1251,7 @@ def set_post_to_read(titles_read, chosen_feed):
                 article_number = int(article_number)
             except:
                 print('='*30, '\nEnter an integer between 1 and ',
-                      len(chosen_feed)-2, '\n', '='*30, '\n', sep='', end='')
+                      len(chosen_feed)-3, '\n', '='*30, '\n', sep='', end='')
                 continue
             if not article_number:
                 break
@@ -1192,7 +1285,7 @@ def set_to_unread_one_article(article_number, chosen_feed, titles_read):
     feed_title = list(chosen_feed.keys())[0]
 
     try:
-        link = hash_a_string(chosen_feed[feed_title][article_number+1][1])
+        link = hash_a_string(chosen_feed[feed_title][article_number+2][1])
     # in case user chose a title that is unread...
         try:
             ndx = titles_read.index(link)
@@ -1202,7 +1295,7 @@ def set_to_unread_one_article(article_number, chosen_feed, titles_read):
                     '='*30, '\n', sep='', end='')
     except:
         print('='*30, '\nEnter an integer between 1 and ',
-              len(chosen_feed[feed_title])-2, '\n', '='*30, '\n',  sep='', end='')
+              len(chosen_feed[feed_title])-3, '\n', '='*30, '\n',  sep='', end='')
 
     return titles_read
 
@@ -1331,6 +1424,9 @@ def main_menu(myFeeds, titles_read, err):
 
         elif menu_choice.upper() == 'M':
             myFeeds = move_feed(myFeeds)
+
+        elif menu_choice.upper() == 'R':
+            myFeeds = edit_RSS_address(myFeeds)
 
         elif menu_choice.upper() == 'X':
             pass

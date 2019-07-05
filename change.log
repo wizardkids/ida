@@ -115,3 +115,8 @@
     -- fix del_feed() so it works with the new {myFeeds} structure
     -- remove list_my_feeds(), since it is no longer needed
     -- fix clean_feeds() so that it deletes empty groups (excepting "Default"); right now this only works for one group at a time to avoid "RuntimeError: dictionary changed size during iteration"
+    -- fix error in list_updated_feeds() 
+
+2019-07-05
+    -- add edit_rss_address() to allow user to fix bad RSS addresses
+    -- various fixes to set_post_to_read(), set_post_to_unread()
