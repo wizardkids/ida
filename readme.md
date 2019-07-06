@@ -3,7 +3,7 @@
 ## **Why a home-grown feed reader?**
 Google Reader was wonderful and then it went away. Others followed and died. I currently use Feedly and it's great (mostly) but for how long?
 
-**_ida_** is designed to be lightweight. It does nothing in the background; it does not monitor websites continuously. Consequently, checking websites can be a little slow but **_ida_** checks websites for updates much, much faster than you can manually! **_AND_**, it will never be sunset.
+**_ida_** is designed to be lightweight. It does nothing in the background; it does not monitor websites continuously. Consequently, checking websites can be relatively slow: **_ida_** can update 20 feeds in 14 seconds, which is a whole lot faster than you can manually perform the same task. **_AND_**, it will never be sunset!
 
 ## **Features:**
 - import OPML files
