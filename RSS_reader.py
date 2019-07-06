@@ -1455,12 +1455,3 @@ if __name__ == '__main__':
     print('ida ' + version_num + ' - a small news feed reader')
 
     main()
-
-    # ============ UTILITY FUNCTIONS FOR TESTING PURPOSES ============
-
-    # -- print various attributes of a single RSS feed
-    # get_feed_info('https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw')
-
-
-    # -- print all the functions in this script
-    # print_all_functions()
