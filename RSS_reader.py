@@ -1299,12 +1299,11 @@ def show_lastest_rss(rss):
 
 # === STARTUP AND MISCELLANEOUS FUNCTIONS ================
 
-def about(version_num):
+def about(version_num, revision_number):
     """
     Information about the author and product.
     """
     print('='*45)
-    revision_number = get_revision_number()
 
     txt1 = 'ida - a small news feed reader\n' + ' version: ' + str(version_num) + '\n' + \
         'revision: ' + str(revision_number) + '\n' + \
@@ -1382,7 +1381,7 @@ def main_menu(myFeeds, titles_read, err):
             myFeeds, err = add_feed(myFeeds)
 
         elif menu_choice.upper() == 'B':
-            about(version_num)
+            about(version_num, revision_number)
 
         elif menu_choice.upper() == 'C':
             updated_feeds, bad_feeds, myFeeds = find_all_changes(myFeeds)
@@ -1472,7 +1471,7 @@ def get_revision_number():
 if __name__ == '__main__':
 
     version_num = '1.0'
-    revision_number = get_revision_number()
+    revision_number = 26
     print('ida ' + version_num + ' - a small news feed reader')
 
     main()
