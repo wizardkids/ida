@@ -121,3 +121,6 @@
     -- add edit_rss_address() to allow user to fix bad RSS addresses
     -- various fixes to set_post_to_read(), set_post_to_unread()
     -- added menu item for edit_rss_address() and rearranged menu
+
+2019-07-06
+    -- fixed logic error in rename_group()

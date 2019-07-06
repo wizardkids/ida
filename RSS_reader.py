@@ -784,15 +784,18 @@ def rename_group(myFeeds):
     this_feed = my_keys[ren-1]
 
     while True:
-        new_name = input('Edited name (or <enter> to delete): ')
+        new_name = input('Edited name (or type DELETE): ')
         for i in my_keys:
             if new_name.upper() == i.upper():
-                print('That feed already exists.')
-            continue
-        else:
-            break
+                print('That group already exists.')
+                continue
+            else:
+                pass
+        break
 
     if not new_name:
+        return myFeeds
+    elif new_name == 'DELETE':
         if myFeeds[this_feed]:
             print('\n', '='*30, '\nDelete all feeds in this group first.\n', '='*30, '\n', sep='')
             y = ''
@@ -803,11 +806,11 @@ def rename_group(myFeeds):
             else:
                 y = ''
     else:
-        y = input('Change ' + this_feed + ' to ' + new_name + '? (Y/N) ')
+        y = input('Change ' + this_feed + ' to ' + new_name + '? (Y/N) ').upper()
 
-    if y.upper() == 'Y':
+    if y == 'Y':
         myFeeds[new_name] = myFeeds.pop(this_feed)
-    elif y.upper() == 'D':
+    elif y == 'D':
         myFeeds.pop(this_feed)
     else:
         pass
