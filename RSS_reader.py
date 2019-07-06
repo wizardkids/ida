@@ -7,26 +7,6 @@ Richard E. Rawson
 Program Description:
     A small, lightweight, RSS feed reader.
 
-Features:
-    -- Add, edit, delete URLs
-    -- convert URL to RSS
-    -- name the feed with your own name
-    -- keep track of how frequently the feed is updated
-    -- keep track of last time the feed was updated
-    -- notify if a feed is unreachable
-    -- display each RSS site and a list of its titles
-    -- order the titles from newest to oldest
-    -- load a title in a browser
-    -- provide a mechanism for selecting a particular title to read
-    -- mark a read title as "read"
-    -- manually mark a feed title as read or unread
-    -- automatically update all feeds when app starts update
-    -- background mode updates feed in the background
-    -- group feeds so they are easier to find
-    -- import OPML
-    -- export to...???
-    -- list feeds by group/title
-
 How to find RSS address for a website:
 https://www.lifewire.com/what-is-an-rss-feed-4684568
 
@@ -47,7 +27,6 @@ from sys import modules
 
 import feedparser
 import requests
-import urlwatch
 from bs4 import BeautifulSoup as bs4
 
 """
@@ -97,23 +76,15 @@ def get_feed_info(rss):
 
     try:
         newsfeed = feedparser.parse(rss)
-        # entries is the only dict in [newsfeed_keys]
+        # ['entries'] is the only dict in [newsfeed_keys]
         newsfeed_keys = ['feed', 'entries', 'bozo', 'headers', 'updated',
                          'updated_parsed', 'href', 'status', 'encoding', 'version', 'namespaces']
-
-        # pprint(newsfeed, depth=1, width=40, indent=2)
-
-        # pprint(newsfeed['headers'], width=40, indent=2)
 
         feed_keys = ['title', 'title_detail', 'links', 'link', 'subtitle', 'subtitle_detail', 'updated', 'updated_parsed',
                      'language', 'sy_updateperiod', 'sy_updatefrequency', 'generator_detail', 'generator', 'cloud', 'image']
 
-        # pprint(newsfeed['feed'], depth=1, width=40, indent=2)
-
         entries_keys = ['title', 'title_detail', 'links', 'link', 'comments', 'published', 'published_parsed', 'authors', 'author',
                         'author_detail', 'tags', 'id', 'guidislink', 'summary', 'summary_detail', 'content', 'wfw_commentrss', 'slash_comments', 'media_content']
-
-        # pprint(newsfeed['entries'], depth=4, width=40, indent=2)
 
         print('RSS ADDRESS:\n', rss, sep='')
         try:
@@ -214,6 +185,7 @@ def import_OPML(myFeeds):
 
     while True:
         print()
+        # get the name of the OPML file and put each line in a [list]
         file = input('Name of OPML file to import: ')
         if file:
             try:
@@ -242,7 +214,7 @@ def import_OPML(myFeeds):
                             (.*htmlUrl=")(?P<URL>.*\")
                             """, re.X)
 
-            # put Group, title, and RSS in {myFeeds}
+            # put group, title, and RSS in {myFeeds}
             myFeeds = {'Default': {}}
             for ndx, line in enumerate(feedly):
                 m_Feed_Group = re.search(rem_Feed_Group, line)
@@ -279,6 +251,7 @@ def import_OPML(myFeeds):
                     myFeeds[this_group].update(new_feed)
             break
         else:
+            # if no file name was entered by user
             err = 'Aborted.'
             return err, myFeeds
 
@@ -308,7 +281,7 @@ def get_url_status(url):
         r = requests.get(url, headers=headers)
         status_code = r.status_code
     except:
-        print('Cannot connect to', url)
+        print('Cannot connect to', url, '\nstatus code: ', status_code, sep='')
         status_code = 404
 
     return status_code
@@ -327,6 +300,7 @@ def add_feed(myFeeds):
     print()
     # enter a URL, find the feed address, parse the feed
     f = input('Website address: ')
+    
     try:
         print('\nLooking for RSS address...')
         result = findfeed(f)
@@ -359,7 +333,7 @@ def add_feed(myFeeds):
         if not result:
             err = 'Feed not added.'
             return myFeeds, err
-    # http://feeds.nature.com/nature/rss/current
+
     rss_address = ''
     if isinstance(result, list):
         for r in result:
@@ -380,9 +354,9 @@ def add_feed(myFeeds):
                   '='*30, '\n', sep='')
             return myFeeds, err
 
-    # add info into [new_feed]
+    # add info into {ew_feed}
     """
-    {feed title: [
+    new_feed = {feed title: [
                         0: feed RSS
                         1: feed URL
                         2: feed.ETag
@@ -391,7 +365,7 @@ def add_feed(myFeeds):
                         5: title of last entry posted on website
                         6: link to last entry posted on website
                         ]
-                    },
+                    }
     """
     new_feed = {}
     try:
@@ -449,7 +423,7 @@ def add_feed(myFeeds):
         else:
             grp_name = ''
 
-    # add [new_feed] to the appropriate group or create group if it doesn't exist
+    # add {new_feed} to the appropriate group or create group if it doesn't exist
     if grp_name:
         try:
             # if the group already exists...
@@ -529,7 +503,7 @@ def del_feed(myFeeds):
                   feed_cnt, '.\n', '='*30, '\n', sep='')
             continue
 
-    # find that name in {myFeeds} and set title to ''
+    # find that name in {myFeeds} and set link to ''
     ndx = 0
     for group, feeds in myFeeds.items():
         print(group)
@@ -555,6 +529,7 @@ def edit_RSS_address(myFeeds):
     show_read = False
     feed_cnt = print_feeds(myFeeds, show_read)
 
+    # get the number of the feed to edit
     while True:
         print()
         f = input('Enter number of feed to edit: ')
@@ -763,6 +738,7 @@ def rename_group(myFeeds):
         my_keys.append(k)
     print()
 
+    # get the name of the group to edit
     while True:
         ren = input("Number of group to rename or delete: ")
         if not ren:
@@ -783,6 +759,7 @@ def rename_group(myFeeds):
          
     this_feed = my_keys[ren-1]
 
+    # get the new name for the group or enter DELETE to delete a group
     while True:
         new_name = input('Edited name (or type DELETE): ')
         for i in my_keys:
@@ -854,7 +831,7 @@ def save_myFeeds(myFeeds):
 
 def print_feeds(myFeeds, show_read):
     """
-    Print a numbered list of feeds.
+    Print a numbered list of feeds, by group.
     Used by: del_feed(), edit_rss_address(), move_feed(), list_updated_feeds()
     """
     ndx = 0
@@ -957,7 +934,7 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
 
     this_feed = {}
 
-    # store information in [rss_feeds] for this feed
+    # store information in {this_feed} for this feed
     try:
         this_feed.update({feed_title: [rss_address, '', [most_recent_title, most_recent_link]]})
         posts = []
@@ -999,6 +976,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
     Create a list of your feeds. Let user select from that list one feed and then create a list of updated articles for that feed. Default to filtering out articles that have been read. Let user choose articles to read online.
     """
 
+    # retrieve history.json from disk; this file contains [updated_feeds] from the last time the user ran "<c>heck feeds" from the main menu
     try:
         with open("history.json", 'r', encoding='utf-8') as file:
             updated_feeds = json.load(file)
@@ -1331,7 +1309,7 @@ def fold(txt):
 
 def hash_a_string(this_string):
     """
-    Create a hash value for a string (this_string). This utility is used to hash links before storing the link in [titles_read]. Hashing saves disk space and speeds searching the [list].
+    Create a hash value for a string (this_string). This utility is used to hash links before storing the link in [titles_read]. Hashing saves disk space, speeds searching the [list], and, because of simplicity, reduces error.
     """
     return str(int(hashlib.sha256(this_string.encode('utf-8')).hexdigest(), 16) % 10**8)
 
@@ -1362,7 +1340,6 @@ def main_menu(myFeeds, titles_read, err):
         'edit <r>ss address', '                ', '<m>ove feed   ',
         '                  ', 'a<b>out         ', '<q>uit        ',
     )
-    # 'e<x>port feeds '
 
     while True:
         if err:
