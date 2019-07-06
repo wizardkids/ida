@@ -8,3 +8,6 @@ scratch.py
 *.opml
 *.txt
 *.json
+*.ico
+*.png
+*.jpg

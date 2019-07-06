@@ -1359,7 +1359,6 @@ def main_menu(myFeeds, titles_read, err):
         '<e>dit group      ', '<l>ist feeds    ', '<d>elete feed ',
         'edit <r>ss address', '                ', '<m>ove feed   ',
         '                  ', 'a<b>out         ', '<q>uit        ',
-
     )
     # 'e<x>port feeds '
 
