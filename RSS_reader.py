@@ -860,7 +860,7 @@ def print_feeds(myFeeds, show_read):
         for feed_title, feed_info in feeds.items():
             ndx += 1
             if feed_info[4] == 'unchanged':
-                print('  ', ndx, ": ", feed_title, sep='')
+                print('   ', ndx, ": ", feed_title, sep='')
             else:
                 print(' *', ndx, ": ", feed_title, sep='')
     return ndx
@@ -1471,7 +1471,7 @@ def get_revision_number():
 if __name__ == '__main__':
 
     version_num = '1.0'
-    revision_number = 26
+    revision_number = 27
     print('ida ' + version_num + ' - a small news feed reader')
 
     main()
