@@ -506,12 +506,12 @@ def del_feed(myFeeds):
     # find that name in {myFeeds} and set link to ''
     ndx = 0
     for group, feeds in myFeeds.items():
-        print(group)
         for feed_title, feed_info in feeds.items():
             ndx += 1
             if ndx == f:
-                print('  ', ndx, ": ", feed_title, sep='')
-                myFeeds[group][feed_title][0] = ''
+                confirming = input('Delete ' + feed_title + '? (Y/N)').upper
+                if confirming == 'Y':
+                    myFeeds[group][feed_title][0] = ''
 
     print()
 

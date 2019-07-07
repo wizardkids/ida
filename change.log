@@ -124,3 +124,6 @@
 
 2019-07-06
     -- fixed logic error in rename_group()
+
+2019-07-07
+    -- fix del_feed() so it asks for confirmation before deleting a feed
