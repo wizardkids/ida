@@ -127,3 +127,8 @@
 
 2019-07-07
     -- fix del_feed() so it asks for confirmation before deleting a feed
+    -- minor edits
+
+2019-07-08
+    -- minor edits
+    -- fix print_feeds() so that feeds where all posts have been read are listed without an "*", signifying that they are "unchanged"
