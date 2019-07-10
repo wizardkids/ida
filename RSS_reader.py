@@ -1484,7 +1484,7 @@ def get_revision_number():
 if __name__ == '__main__':
 
     version_num = '1.0'
-    revision_number = 27
+    revision_number = 30
     print('ida ' + version_num + ' - a small news feed reader')
 
     main()
@@ -1497,3 +1497,6 @@ if __name__ == '__main__':
 
     # -- print all the functions in this script
     # print_all_functions()
+
+    # -- print the revision number and update under if __name__ == '__main__'
+    # print(get_revision_number())
