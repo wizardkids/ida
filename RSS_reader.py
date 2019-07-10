@@ -63,8 +63,6 @@ updated_feeds = [{feed title: [
 =================================
 """
 
-# todo -- When all the articles in a feed are read, the "*" next to the feed name should be removed so you know that you've either read or set-to-read all the articles in the feed
-
 
 # === DEVELOPER UTILITY FUNCTIONS ================
 
@@ -1052,7 +1050,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                       len(updated_feeds), '\n', '='*30, '\n', sep='')
                 continue
 
-        # parse the choice of feeds that the user made
+        # parse the choice of feeds that the user just made
         if not choice:
             break
         else:
@@ -1086,6 +1084,16 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     print()
                     if m == 'y':
                         titles_read = set_post_to_unread(titles_read, chosen_feed)
+                    else:
+                        # set 'changed' in {myFeeds} for this feed to "unchanged"
+                        # find the feed in {myFeeds}
+                        ndx, done = 0, False
+                        for group, feeds in myFeeds.items():
+                            for this_title, feed_info in feeds.items():
+                                if this_title == feed_title:
+                                    myFeeds[group][feed_title][4] = 'unchanged'
+                                    done = True
+                            if done: break
                     break
 
                 print()
@@ -1156,7 +1164,6 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     else:
                         break
 
-                
             print()
 
             if cnt_unread_articles == 0:
@@ -1267,7 +1274,6 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
     titles_read.append(link)
     # strip out repeat titles
     titles_read = list(set(titles_read))
-    print()
 
     return titles_read
 

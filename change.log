@@ -132,3 +132,6 @@
 2019-07-08
     -- minor edits
     -- fix print_feeds() so that feeds where all posts have been read are listed without an "*", signifying that they are "unchanged"
+
+2019-07-10
+    -- fix list_updated_feeds() so that {myFeeds} for a particular feed is changed to "unchanged" when all unread articles have been read (or set to "read" status)
