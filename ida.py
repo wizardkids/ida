@@ -471,7 +471,7 @@ def clean_feeds(myFeeds):
     return myFeeds
 
 
-def del_feed(myFeeds):
+def del_feed(myFeeds, titles_read):
     """
     Delete a feed.
     """
@@ -482,7 +482,7 @@ def del_feed(myFeeds):
 
     # generate a list of feed names
     print()
-    feed_cnt = print_feeds(myFeeds, show_read)
+    feed_cnt = print_feeds(myFeeds, show_read, titles_read)
 
     print()
     # get the number of the feed to delete
@@ -506,12 +506,12 @@ def del_feed(myFeeds):
     # find that name in {myFeeds} and set link to ''
     ndx = 0
     for group, feeds in myFeeds.items():
-        print(group)
         for feed_title, feed_info in feeds.items():
             ndx += 1
             if ndx == f:
-                print('  ', ndx, ": ", feed_title, sep='')
-                myFeeds[group][feed_title][0] = ''
+                confirming = input('Delete ' + feed_title + '? (Y/N)').upper
+                if confirming == 'Y':
+                    myFeeds[group][feed_title][0] = ''
 
     print()
 
@@ -522,12 +522,12 @@ def del_feed(myFeeds):
     return myFeeds
 
 
-def edit_RSS_address(myFeeds):
+def edit_RSS_address(myFeeds, titles_read):
     """
     Manually enter an RSS address for a feed.
     """
     show_read = False
-    feed_cnt = print_feeds(myFeeds, show_read)
+    feed_cnt = print_feeds(myFeeds, show_read, titles_read)
 
     # get the number of the feed to edit
     while True:
@@ -649,7 +649,7 @@ def findfeed(site):
     return result
 
 
-def move_feed(myFeeds):
+def move_feed(myFeeds, titles_read):
     """
     Move a feed to a different group.
     """
@@ -661,7 +661,7 @@ def move_feed(myFeeds):
 
         # generate a list of feed names
         print()
-        feed_cnt = print_feeds(myFeeds, show_read)
+        feed_cnt = print_feeds(myFeeds, show_read, titles_read)
 
         print()
         # enter the number of the feed to move
@@ -829,20 +829,44 @@ def save_myFeeds(myFeeds):
 
 # === CHECK FEEDS FOR UPDATES ================
 
-def print_feeds(myFeeds, show_read):
+def print_feeds(myFeeds, show_read, titles_read):
     """
     Print a numbered list of feeds, by group.
     Used by: del_feed(), edit_rss_address(), move_feed(), list_updated_feeds()
     """
+    # retrieve history.json from disk; this file contains [updated_feeds] from the last time the user ran "<c>heck feeds" from the main menu
+    try:
+        with open("history.json", 'r', encoding='utf-8') as file:
+            updated_feeds = json.load(file)
+    except FileNotFoundError:
+        print('Run "<c>heck feeds" first.')
+        updated_feeds = []
+        return myFeeds, updated_feeds, titles_read
+    
     ndx = 0
     for group, feeds in myFeeds.items():
         print(group)
         for feed_title, feed_info in feeds.items():
+            # see if all articles in feed have been read
+            for i in updated_feeds:
+                all_read = False
+                for k, v in i.items():
+                    if k == feed_title:
+                        cnt = 0
+                        for a in range(2, len(v)):
+                            cnt = cnt + 1 if hash_a_string(v[a][1]) in titles_read else cnt
+                        if cnt == len(v) - 2:
+                            all_read = True
+                        break
+                if k == feed_title: break
             ndx += 1
-            if feed_info[4] == 'unchanged':
+            if feed_info[4] == 'unchanged' and not all_read:
+                print(' *', ndx, ": ", feed_title, sep='')
+            elif feed_info[4] == 'unchanged':
                 print('   ', ndx, ": ", feed_title, sep='')
             else:
                 print(' *', ndx, ": ", feed_title, sep='')
+
     return ndx
 
 
@@ -852,7 +876,7 @@ def find_all_changes(myFeeds):
     """
     rss_list, updated_feeds, bad_feeds = [], [], []
 
-    print('\nChecking RSS feeds for updates...\nthis may take a few minutes.\n', sep='')
+    print('\nChecking RSS feeds for updates.\nThis may take a few seconds...\n', sep='')
 
     # iterate through {myFeeds} and get each RSS feed
     for group, feeds in myFeeds.items():
@@ -1006,7 +1030,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
     while True:
 
         # list feeds, by group, numbering the feeds and flagging updated feeds
-        feed_cnt = print_feeds(myFeeds, show_read)
+        feed_cnt = print_feeds(myFeeds, show_read, titles_read)
         
         # select a feed from the list of feeds
         while True:
@@ -1026,7 +1050,7 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                       len(updated_feeds), '\n', '='*30, '\n', sep='')
                 continue
 
-        # parse the choice of feeds that the user made
+        # parse the choice of feeds that the user just made
         if not choice:
             break
         else:
@@ -1038,12 +1062,13 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
             # having chosen a feed, have user choose which post to view
             while True:
                 """
-                {feed title: [
-                    0: feed RSS
-                    1: changed/unchanged
-                    2: [most recent post title, most recent post link]
-                    3: [title, link]
-                    4: ...]}
+                chosen_feed = {feed title: [
+                                0: feed RSS
+                                1: changed/unchanged
+                                2: [most recent post title, most recent post link]
+                                3: [title, link]
+                                4: ...]
+                            }
                 """
 
                 # find the number of articles in [chosen_feed] that have already been read
@@ -1059,6 +1084,16 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     print()
                     if m == 'y':
                         titles_read = set_post_to_unread(titles_read, chosen_feed)
+                    else:
+                        # set 'changed' in {myFeeds} for this feed to "unchanged"
+                        # find the feed in {myFeeds}
+                        ndx, done = 0, False
+                        for group, feeds in myFeeds.items():
+                            for this_title, feed_info in feeds.items():
+                                if this_title == feed_title:
+                                    myFeeds[group][feed_title][4] = 'unchanged'
+                                    done = True
+                            if done: break
                     break
 
                 print()
@@ -1129,7 +1164,6 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     else:
                         break
 
-                
             print()
 
             if cnt_unread_articles == 0:
@@ -1224,7 +1258,7 @@ def set_post_to_read(titles_read, chosen_feed):
                 break
             else:
                 titles_read = set_to_read_one_article(
-                    article_number, chosen_feed, titles_read)
+                    article_number+1, chosen_feed, titles_read)
                 break
     return titles_read
 
@@ -1240,7 +1274,6 @@ def set_to_read_one_article(article_number, chosen_feed, titles_read):
     titles_read.append(link)
     # strip out repeat titles
     titles_read = list(set(titles_read))
-    print()
 
     return titles_read
 
@@ -1369,7 +1402,7 @@ def main_menu(myFeeds, titles_read, err):
                 myFeeds, titles_read, bad_feeds)
 
         elif menu_choice.upper() == 'D':
-            myFeeds = del_feed(myFeeds)
+            myFeeds = del_feed(myFeeds, titles_read)
 
         elif menu_choice.upper() == 'E':
             myFeeds = rename_group(myFeeds)
@@ -1389,10 +1422,10 @@ def main_menu(myFeeds, titles_read, err):
                 myFeeds, titles_read)
 
         elif menu_choice.upper() == 'M':
-            myFeeds = move_feed(myFeeds)
+            myFeeds = move_feed(myFeeds, titles_read)
 
         elif menu_choice.upper() == 'R':
-            myFeeds = edit_RSS_address(myFeeds)
+            myFeeds = edit_RSS_address(myFeeds, titles_read)
 
         elif menu_choice.upper() == 'X':
             pass
@@ -1451,7 +1484,16 @@ def get_revision_number():
 if __name__ == '__main__':
 
     version_num = '1.0'
-    revision_number = 27
+    revision_number = 30
     print('ida ' + version_num + ' - a small news feed reader')
 
     main()
+
+    # ============ UTILITY FUNCTIONS FOR TESTING PURPOSES ============
+
+    # -- print various attributes of a single RSS feed
+    # get_feed_info('https://www.youtube.com/feeds/videos.xml?channel_id=UCxAS_aK7sS2x_bqnlJHDSHw')
+
+
+    # -- print all the functions in this script
+    # print_all_functions()
