@@ -20,10 +20,10 @@ Google Reader was wonderful and then it went away. Others followed and died. I c
 - set status of a title or range of titles to "read"
 
 ## **Installation:**
-Installation could not be easier. **_ida_** requires only one file: either `ida.py` or `ida.exe`. 
+Installation could not be easier. **_ida_** requires only one file: either `ida.py` or `ida.exe`.
 
 1. If you have python 3.7+ installed, you can download `ida.py` and, assuming python.exe is in your PATH, run:
-   
+
     `python ida.py`
 
 2. Download `ida.exe` and run the executable. No other files are needed.
@@ -31,3 +31,17 @@ Installation could not be easier. **_ida_** requires only one file: either `ida.
 3. Download `ida.py` and use [pyinstaller](https://www.pyinstaller.org/) (or equivalent) to build your own executable.
 
 To _download_ one file, click on the file name. On the next screen, click the "Download" button.
+
+## **Required python modules:**
+- bs4
+- datetime
+- feedparser
+- hashlib
+- inspect
+- json
+- re
+- requests
+- sys
+- textwrap
+- urllib.parse
+- webbrowser
