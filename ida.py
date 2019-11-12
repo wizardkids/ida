@@ -1001,8 +1001,9 @@ def save_myFeeds(myFeeds):
     Utility to save {myFeeds} to a file (myFeeds.json).
     """
 
+
     with open("myFeeds.json", "w+") as file:
-        file.write(json.dumps(myFeeds, ensure_ascii=False))
+        file.write(json.dumps(myFeeds, ensure_ascii=True))
 
     return None
 
