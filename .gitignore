@@ -3,6 +3,8 @@
 .vscode/
 __pycache__/
 scratch.py
+__init__.py
+change.log
 *.pyc
 *.orig
 *.opml
