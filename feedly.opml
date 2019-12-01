@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<opml version="1.0">
+    <head>
+        <title>Rick subscriptions in feedly Cloud</title>
+    </head>
+    <body>
+        <outline text="Emergent blogs" title="Emergent blogs">
+            <outline type="rss" text="Ignatian Spirituality" title="Ignatian Spirituality" xmlUrl="http://feeds.feedburner.com/dotMagis?format=xml" htmlUrl="https://www.ignatianspirituality.com"/>
+            <outline type="rss" text="bush baby colvin" title="bush baby colvin" xmlUrl="http://bushbabycolvin.blogspot.com/feeds/posts/default" htmlUrl="http://bushbabycolvin.blogspot.com/"/>
+            <outline type="rss" text="With new eyes" title="With new eyes" xmlUrl="http://wrostoll.blogspot.com/feeds/posts/default" htmlUrl="http://wrostoll.blogspot.com/"/>
+            <outline type="rss" text="Voice in the Wilderness" title="Voice in the Wilderness" xmlUrl="http://ravenwilderness.blogspot.com/feeds/posts/default?alt=rss" htmlUrl="http://ravenwilderness.blogspot.com/"/>
+            <outline type="rss" text="God In All Things" title="God In All Things" xmlUrl="http://godinallthings.com/feed/" htmlUrl="https://godinallthings.com"/>
+            <outline type="rss" text="Richer By Far" title="Richer By Far" xmlUrl="http://richerbyfar.com/feed/" htmlUrl="https://richerbyfar.com"/>
+            <outline type="rss" text="One Spirit Resources" title="One Spirit Resources" xmlUrl="http://www.onespiritresources.com/xml/onespiritresources_rss.xml" htmlUrl="http://www.onespiritresources.com"/>
+            <outline type="rss" text="Carl McColman" title="Carl McColman" xmlUrl="http://www.patheos.com/blogs/carlmccolman/feed/" htmlUrl="https://www.patheos.com/blogs/carlmccolman"/>
+            <outline type="rss" text="Choshen Farm" title="Choshen Farm" xmlUrl="https://www.choshenfarm.org/home?format=RSS" htmlUrl="https://choshenfarm.org"/>
+            <outline type="rss" text="What is Church? - RSS" title="What is Church? - RSS" xmlUrl="http://www.whatischurch.com/feeds/posts/default?alt=rss" htmlUrl="http://www.whatischurch.com/"/>
+        </outline>
+        <outline text="Miscellaneous" title="Miscellaneous">
+            <outline type="rss" text="Paul Arbair" title="Paul Arbair" xmlUrl="https://paularbair.wordpress.com/feed/" htmlUrl="https://paularbair.wordpress.com"/>
+            <outline type="rss" text="KeeFox" title="KeeFox" xmlUrl="http://feeds.feedburner.com/keefox" htmlUrl="http://keefox.org/"/>
+            <outline type="rss" text="Zen Habits" title="Zen Habits" xmlUrl="http://feeds.feedburner.com/zenhabits" htmlUrl="http://zenhabits.net"/>
+            <outline type="rss" text="MakeUseOf" title="MakeUseOf" xmlUrl="http://feeds.feedburner.com/Makeuseof" htmlUrl="https://www.makeuseof.com"/>
+            <outline type="rss" text="PyMOTW – Doug Hellmann" title="PyMOTW – Doug Hellmann" xmlUrl="http://feeds.doughellmann.com/PyMOTW" htmlUrl="https://doughellmann.com/blog"/>
+            <outline type="rss" text="Surplus Energy Economics" title="Surplus Energy Economics" xmlUrl="http://surplusenergyeconomics.wordpress.com/feed/" htmlUrl="https://surplusenergyeconomics.wordpress.com"/>
+            <outline type="rss" text="Lifehacker" title="Lifehacker" xmlUrl="http://feeds.gawker.com/lifehacker/full" htmlUrl="https://lifehacker.com"/>
+            <outline type="rss" text="George Monbiot" title="George Monbiot" xmlUrl="http://feeds.feedburner.com/Monbiotcom" htmlUrl="https://www.monbiot.com"/>
+        </outline>
+        <outline text="Education" title="Education">
+            <outline type="rss" text="Casting Out Nines" title="Casting Out Nines" xmlUrl="http://chronicle.com/blognetwork/castingoutnines/feed/" htmlUrl="https://www.chronicle.com/blognetwork/castingoutnines"/>
+            <outline type="rss" text="sciencegeekgirl.com" title="sciencegeekgirl.com" xmlUrl="http://feeds.feedburner.com/Sciencegeekgirl" htmlUrl="http://blog.sciencegeekgirl.com"/>
+            <outline type="rss" text="summercherland" title="summercherland" xmlUrl="https://summercherland.wordpress.com/feed/" htmlUrl="https://summercherland.wordpress.com"/>
+            <outline type="rss" text="TeachThought" title="TeachThought" xmlUrl="http://www.teachthought.com/feed/" htmlUrl="https://www.teachthought.com"/>
+            <outline type="rss" text="Punya Mishra's Web" title="Punya Mishra's Web" xmlUrl="http://punya.educ.msu.edu/feed/" htmlUrl="https://www.punyamishra.com"/>
+            <outline type="rss" text="Robert Talbert, PhD" title="Robert Talbert, PhD" xmlUrl="http://www.rtalbert.org/feed.xml" htmlUrl="http://rtalbert.org/"/>
+        </outline>
+        <outline text="eTOCs" title="eTOCs">
+            <outline type="rss" text="Nature - Issue - nature.com science feeds" title="Nature - Issue - nature.com science feeds" xmlUrl="http://www.nature.com/nature/current_issue/rss" htmlUrl="http://feeds.nature.com/nature/rss/current"/>
+        </outline>
+    </body>
+</opml>
