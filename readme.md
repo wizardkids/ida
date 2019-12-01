@@ -32,6 +32,20 @@ Installation could not be easier. **_ida_** requires only one file: either `ida.
 
 To _download_ one file, click on the file name. On the next screen, click the "Download" button.
 
+## **Usage**
+- The program is menu driven, and includes only essential capabilities as noted under *Features*. There are no options or preferences.
+- See *Recommended setup* below for creating a shortcut.
+- python 3 must be in the PATH environment variable.
+
+## **Recommended setup**
+If you want to run "katz" from your desktop, here is what you need to do:
+1. Put all of the files in this repository in a directory of your choice.
+2. Modify katz.bat as noted within the .bat file.
+3. Create a shortcut on your desktop.
+4. In the properties dialog for the shortcut
+   - change "TARGET" to the full path, including the filename, for katz.bat.
+   - change "START IN" to the path for the directory that holds katz.bat
+
 ## **Required python modules:**
 - bs4
 - datetime
