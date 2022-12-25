@@ -12,6 +12,10 @@ https://www.lifewire.com/what-is-an-rss-feed-4684568
 
 How to use python to get RSS address from a website:
 http://bluegalaxy.info/codewalk/2017/09/21/python-using-requests-to-get-web-page-source-text/
+
+Simple news aggregator:
+    https://newsapi.org/
+    Source: https://www.youtube.com/watch?v=ZRlbf5P2iMA
 """
 
 import hashlib
@@ -298,7 +302,8 @@ def import_OPML(myFeeds):
                     this_RSS = m_RSS.group("RSS")
                 if m_Feed_Title and m_RSS and m_HTML:
                     # add placeholders for feed.ETag, feed.modified, feed.updated, feed.last_title, feed.last_link
-                    new_feed = {this_title: [this_RSS, this_URL, "", "", "", "", ""]}
+                    new_feed = {this_title: [
+                        this_RSS, this_URL, "", "", "", "", ""]}
 
                     myFeeds[this_group].update(new_feed)
             break
@@ -446,7 +451,8 @@ def add_feed(myFeeds):
         post_link = ""
 
     new_feed.update(
-        {feed_title: [rss_address, URL, "", "", "unchanged", post_title, post_link]}
+        {feed_title: [rss_address, URL, "", "",
+                      "unchanged", post_title, post_link]}
     )
 
     # get the group that the feed should be added to...
@@ -459,7 +465,8 @@ def add_feed(myFeeds):
     print()
 
     while True:
-        grp_name = input("Add feed to which group number (or enter new group name)? ")
+        grp_name = input(
+            "Add feed to which group number (or enter new group name)? ")
         if not grp_name:
             grp_name = 0
             break
@@ -961,7 +968,8 @@ def rename_group(myFeeds):
             else:
                 y = ""
     else:
-        y = input("Change " + this_feed + " to " + new_name + "? (Y/N) ").upper()
+        y = input("Change " + this_feed + " to " +
+                  new_name + "? (Y/N) ").upper()
 
     if y == "Y":
         myFeeds[new_name] = myFeeds.pop(this_feed)
@@ -1000,7 +1008,6 @@ def save_myFeeds(myFeeds):
     """
     Utility to save {myFeeds} to a file (myFeeds.json).
     """
-
 
     with open("myFeeds.json", "w+") as file:
         file.write(json.dumps(myFeeds, ensure_ascii=True))
@@ -1159,7 +1166,8 @@ def get_feed_status(rss_feed, myFeeds, updated_feeds, bad_feeds):
     # store information in {this_feed} for this feed
     try:
         this_feed.update(
-            {feed_title: [rss_address, "", [most_recent_title, most_recent_link]]}
+            {feed_title: [rss_address, "", [
+                most_recent_title, most_recent_link]]}
         )
         posts = []
         for i in feed_update["entries"]:
@@ -1303,10 +1311,12 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                         sep="",
                         end="",
                     )
-                    m = input("\nUn-read some articles from this feed? (Y/N) ").lower()
+                    m = input(
+                        "\nUn-read some articles from this feed? (Y/N) ").lower()
                     print()
                     if m == "y":
-                        titles_read = set_post_to_unread(titles_read, chosen_feed)
+                        titles_read = set_post_to_unread(
+                            titles_read, chosen_feed)
                     else:
                         # set 'changed' in {myFeeds} for this feed to "unchanged"
                         # find the feed in {myFeeds}
@@ -1364,9 +1374,11 @@ def list_updated_feeds(myFeeds, titles_read=[], bad_feeds=[]):
                     if post == "t":
                         show_read = toggle_show_read_articles(show_read)
                     elif post == "u":
-                        titles_read = set_post_to_unread(titles_read, chosen_feed)
+                        titles_read = set_post_to_unread(
+                            titles_read, chosen_feed)
                     elif post == "r":
-                        titles_read = set_post_to_read(titles_read, chosen_feed)
+                        titles_read = set_post_to_read(
+                            titles_read, chosen_feed)
                 else:
                     try:
                         post = int(post)
@@ -1442,7 +1454,7 @@ def set_post_to_unread(titles_read, chosen_feed):
             try:
                 ndx = article_number.index("-")
                 start_num = int(article_number[0:ndx])
-                end_num = int(article_number[ndx + 1 :]) + 1
+                end_num = int(article_number[ndx + 1:]) + 1
             except ValueError:
                 print(
                     "=" * 30,
@@ -1452,7 +1464,8 @@ def set_post_to_unread(titles_read, chosen_feed):
                 )
                 return titles_read
             for i in range(start_num, end_num):
-                titles_read = set_to_unread_one_article(i, chosen_feed, titles_read)
+                titles_read = set_to_unread_one_article(
+                    i, chosen_feed, titles_read)
             break
         else:
             try:
@@ -1492,7 +1505,7 @@ def set_post_to_read(titles_read, chosen_feed):
             try:
                 ndx = article_number.index("-")
                 start_num = int(article_number[0:ndx]) + 1
-                end_num = int(article_number[ndx + 1 :]) + 2
+                end_num = int(article_number[ndx + 1:]) + 2
             except ValueError:
                 print(
                     "=" * 30,
@@ -1502,7 +1515,8 @@ def set_post_to_read(titles_read, chosen_feed):
                 )
                 return titles_read
             for i in range(start_num, end_num):
-                titles_read = set_to_read_one_article(i, chosen_feed, titles_read)
+                titles_read = set_to_read_one_article(
+                    i, chosen_feed, titles_read)
             break
         else:
             try:
@@ -1681,8 +1695,8 @@ def main_menu(myFeeds, titles_read, err):
 
         print()
         for i in range(0, len(menu), 3):
-            m = "".join(menu[i : i + 3])
-            m = "".join(menu[i : i + 3])
+            m = "".join(menu[i: i + 3])
+            m = "".join(menu[i: i + 3])
             print(m)
         print()
 
@@ -1699,7 +1713,8 @@ def main_menu(myFeeds, titles_read, err):
 
         elif menu_choice.upper() == "C":
             updated_feeds, bad_feeds, myFeeds = find_all_changes(myFeeds)
-            myFeeds, titles_read = list_updated_feeds(myFeeds, titles_read, bad_feeds)
+            myFeeds, titles_read = list_updated_feeds(
+                myFeeds, titles_read, bad_feeds)
 
         elif menu_choice.upper() == "D":
             myFeeds = del_feed(myFeeds, titles_read)
